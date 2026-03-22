@@ -99,8 +99,18 @@ body {
 .hero .tagline {
   font-size: 1.25rem;
   color: var(--text-muted);
-  margin-bottom: 2.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 400;
+}
+
+.activity-ticker {
+  font-size: 0.85rem;
+  color: var(--accent);
+  opacity: 0.75;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  min-height: 1.4em;
 }
 
 .cta-row {
