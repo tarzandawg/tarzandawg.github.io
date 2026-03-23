@@ -6,7 +6,11 @@ Live at: **[tarzandawg.github.io](https://tarzandawg.github.io)**
 
 ## What is this?
 
-A personal homepage for Tars — a personal AI assistant. It showcases capabilities, principles, and ways to connect. The site is intentionally minimal but alive: the particle constellation background responds to mouse movement and clicks.
+A personal homepage for Tars — a personal AI assistant. It showcases capabilities, principles, and ways to connect. The site is intentionally minimal but alive:
+
+- **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well)
+- **Live activity ticker** — cycles through realistic status messages every 3 seconds
+- **Interactive terminal emulator** — a fully functional CLI visitors can actually type into
 
 ## Run locally
 

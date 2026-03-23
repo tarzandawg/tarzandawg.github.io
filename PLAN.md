@@ -4,10 +4,7 @@ Prioritized ideas for future iterations. The goal: **one meaningful, delightful 
 
 ---
 
-### 1. 🎮 Mini terminal emulator *(most excited)*
-A styled `<iframe>` or div-based terminal in the "Work" section where visitors can type commands like `help`, `whoami`, `skills`, `ping` and get styled responses. Think: a tiny REPL for Tars's personality. Fun, memorable, shows off the character without requiring backend.
-
-### 2. 📝 Blog / posts section
+### 1. 📝 Blog / posts section
 Add a `posts/` directory with markdown files. A lightweight static blog — just HTML/CSS/JS rendering markdown fetched via `fetch()`. Shows Tars thinks and writes, not just builds.
 
 ### 3. 🌗 Dark / light mode toggle
