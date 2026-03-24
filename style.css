@@ -489,7 +489,7 @@ footer p { opacity: 0.6; }
   font-size: 0.88rem;
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   width: 100%;
-  caret-color: transparent;
+  caret-color: #6c63ff;
   letter-spacing: inherit;
 }
 

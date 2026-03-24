@@ -397,8 +397,25 @@ Loaded. Ready. Let's go.`,
   // ── Cursor sync ──────────────────────────────────────────────────────────
   function syncCursor() {
     requestAnimationFrame(() => {
-      const w = inputEl.value.slice(0, inputEl.selectionStart).replace(/ /g, '\u00a0') || '';
-      cursorEl.style.left = w.length + 'ch';
+      const value = inputEl.value;
+      const pos = inputEl.selectionStart;
+      // Get the text before cursor, use a monospace-friendly measurement
+      const textBeforeCursor = value.substring(0, pos) || '';
+      // Create a ghost span to measure text width accurately
+      const ghost = document.createElement('span');
+      ghost.style.cssText = `
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 0.88rem;
+        letter-spacing: inherit;
+        white-space: pre;
+        visibility: hidden;
+        position: absolute;
+      `;
+      ghost.textContent = textBeforeCursor;
+      document.body.appendChild(ghost);
+      const width = ghost.getBoundingClientRect().width;
+      ghost.remove();
+      cursorEl.style.left = width + 'px';
     });
   }
 
@@ -835,8 +852,26 @@ Loaded. Ready. Let's go.`,
   });
 
   // ── Focus terminal when clicking the window ─────────────────────────────
-  terminalWindow.addEventListener('click', () => {
+  // Also focus when clicking anywhere in the terminal body or input row
+  function focusInput() {
     inputEl.focus();
+    // Also move cursor to end of input when focusing
+    inputEl.selectionStart = inputEl.selectionEnd = inputEl.value.length;
+    syncCursor();
+  }
+
+  terminalWindow.addEventListener('click', (e) => {
+    // Only focus if click is not on a scrollbar or other interactive element
+    if (!e.target.closest('.terminal-output')) {
+      focusInput();
+    }
+  });
+
+  // Also listen on body to catch clicks that bubble from children
+  bodyEl.addEventListener('click', (e) => {
+    if (!e.target.closest('.terminal-output')) {
+      focusInput();
+    }
   });
 
   // ── Scroll to terminal when CTA is clicked ──────────────────────────────
@@ -849,6 +884,75 @@ Loaded. Ready. Let's go.`,
         setTimeout(() => inputEl.focus(), 600);
       }
     });
+  });
+
+  // ── Ensure input stays focused while typing ─────────────────────────────
+  // Capture keystrokes at document level when near terminal and forward to input
+  document.addEventListener('keydown', (e) => {
+    const rect = terminalWindow.getBoundingClientRect();
+    const isNearTerminal = 
+      e.clientX >= rect.left - 100 && 
+      e.clientX <= rect.right + 100 && 
+      e.clientY >= rect.top - 100 && 
+      e.clientY <= rect.bottom + 200;
+    
+    if (isNearTerminal && document.activeElement !== inputEl) {
+      // If not a modifier key alone, focus and let the event bubble
+      if (!['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'NumLock', 'ScrollLock'].includes(e.key)) {
+        e.preventDefault();
+        focusInput();
+        // Manually handle the key since input wasn't focused when event fired
+        if (e.key === 'Enter') {
+          const val = inputEl.value;
+          inputEl.value = '';
+          syncCursor();
+          dispatch(val);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (historyIdx > 0) {
+            historyIdx--;
+            inputEl.value = cmdHistory[historyIdx] || '';
+            setTimeout(() => {
+              inputEl.selectionStart = inputEl.selectionEnd = inputEl.value.length;
+              syncCursor();
+            }, 0);
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (historyIdx < cmdHistory.length - 1) {
+            historyIdx++;
+            inputEl.value = cmdHistory[historyIdx] || '';
+          } else {
+            historyIdx = cmdHistory.length;
+            inputEl.value = '';
+          }
+          setTimeout(() => {
+            inputEl.selectionStart = inputEl.selectionEnd = inputEl.value.length;
+            syncCursor();
+          }, 0);
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          const val = inputEl.value.toLowerCase().trim();
+          if (val) {
+            const fullMatch = COMMANDS.find(c => c === val);
+            if (fullMatch) {
+              inputEl.value = fullMatch + ' ';
+            } else {
+              const partial = COMMANDS.find(c => c.startsWith(val));
+              if (partial) {
+                inputEl.value = partial + ' ';
+              }
+            }
+          }
+          syncCursor();
+        } else if (e.key === 'l' && e.ctrlKey) {
+          e.preventDefault();
+          cmdClear();
+        } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          // Regular character - input will handle it now that it's focused
+        }
+      }
+    }
   });
 
   // ── Boot ─────────────────────────────────────────────────────────────────
