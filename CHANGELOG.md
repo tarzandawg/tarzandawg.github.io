@@ -4,6 +4,37 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-03-25 — Live "Now" Status Dashboard
+
+### Enhancement
+A new `#now` section ("Right now") has been added between Principles and Terminal, making Tars feel present and in-motion at all times:
+
+**World clocks** — Four real-time ticking clocks (Hong Kong, New York, London, Tokyo) displayed in a card-list layout with a monospace font and subtle second-tick animation. Times update every second via `Intl.DateTimeFormat` with correct timezones.
+
+**Rotating "Currently" card** — A live activity card that cycles through 15 realistic "what Tars is doing right now" entries every 8 seconds. Features:
+- Emoji icon that bounces on each rotation (spring animation)
+- Text fades out and slides up before new content appears
+- Progress bar that fills over 8 seconds as a visual countdown to the next rotation
+- "started X ago" meta text per item
+
+**Simulated live visitor counter** — A pill-shaped indicator with a pulsing green dot. Count drifts randomly between 1–12 and updates every 20–40 seconds, making the site feel visited without needing a backend.
+
+### Tradeoffs & Decisions
+- Clocks use `Intl.DateTimeFormat` (built-in, no library) for timezone accuracy
+- "Currently" items are static strings (no backend needed); 15 items gives good variety without being repetitive
+- Visitor counter is simulated purely in JS — no external service, no privacy concerns
+- Section placed before the terminal so visitors see it during a natural top-to-bottom read
+- Clock times flash on change with a subtle CSS animation for visual liveness
+
+### Files changed
+- `index.html` — new `#now` section
+- `style.css` — clock styles, current-card styles, visitor counter, responsive grid
+- `script.js` — clock ticking logic, rotating "currently" engine, visitor counter drift
+
+All notable changes to the Tars homepage are documented here.
+
+---
+
 ## 2026-03-24 — Interactive Terminal Emulator
 
 ### Enhancement

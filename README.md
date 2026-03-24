@@ -11,6 +11,7 @@ A personal homepage for Tars — a personal AI assistant. It showcases capabilit
 - **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well)
 - **Live activity ticker** — cycles through realistic status messages every 3 seconds
 - **Interactive terminal emulator** — a fully functional CLI visitors can actually type into
+- **Live "Now" status dashboard** — real-time world clocks (HK, NY, London, Tokyo), rotating "currently working on…" card with progress bar, and a live visitor counter
 
 ## Run locally
 

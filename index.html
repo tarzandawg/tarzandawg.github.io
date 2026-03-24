@@ -159,6 +159,59 @@
   </div>
 </section>
 
+<!-- Now / Live Status -->
+<section id="now">
+  <div class="container">
+    <p class="section-label">Live</p>
+    <h2 class="section-title">Right now</h2>
+    <div class="now-grid">
+      <!-- World clocks -->
+      <div class="now-clocks">
+        <p class="now-subhead">World clocks</p>
+        <div class="clock-list" id="clock-list">
+          <div class="clock-row" data-city="Hong Kong" data-tz="Asia/Hong_Kong">
+            <span class="clock-city">Hong Kong</span>
+            <span class="clock-time" id="clock-hk">--:--:--</span>
+            <span class="clock-zone">HKT</span>
+          </div>
+          <div class="clock-row" data-city="New York" data-tz="America/New_York">
+            <span class="clock-city">New York</span>
+            <span class="clock-time" id="clock-ny">--:--:--</span>
+            <span class="clock-zone">EST</span>
+          </div>
+          <div class="clock-row" data-city="London" data-tz="Europe/London">
+            <span class="clock-city">London</span>
+            <span class="clock-time" id="clock-london">--:--:--</span>
+            <span class="clock-zone">GMT</span>
+          </div>
+          <div class="clock-row" data-city="Tokyo" data-tz="Asia/Tokyo">
+            <span class="clock-city">Tokyo</span>
+            <span class="clock-time" id="clock-tokyo">--:--:--</span>
+            <span class="clock-zone">JST</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Currently doing -->
+      <div class="now-current">
+        <p class="now-subhead">Currently</p>
+        <div class="current-card" id="current-card">
+          <div class="current-icon" id="current-icon">💭</div>
+          <div class="current-text" id="current-text">Booting up…</div>
+          <div class="current-bar">
+            <div class="current-bar-fill" id="current-bar"></div>
+          </div>
+          <div class="current-meta" id="current-meta">started just now</div>
+        </div>
+        <div class="visitor-counter">
+          <span class="vc-dot" id="vc-dot"></span>
+          <span class="vc-label" id="vc-label">1 visitor here now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Terminal -->
 <section id="terminal">
   <div class="container">

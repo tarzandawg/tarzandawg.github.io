@@ -971,6 +971,153 @@ Loaded. Ready. Let's go.`,
 
 })();
 
+// ─── Now / Live Status ────────────────────────────────────────────────────────
+(function () {
+  const CLOCK_IDS = {
+    'clock-hk': 'Asia/Hong_Kong',
+    'clock-ny': 'America/New_York',
+    'clock-london': 'Europe/London',
+    'clock-tokyo': 'Asia/Tokyo',
+  };
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function tickClocks() {
+    const now = new Date();
+    for (const [elId, tz] of Object.entries(CLOCK_IDS)) {
+      const el = document.getElementById(elId);
+      if (!el) continue;
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).formatToParts(now);
+      const h = pad(parseInt(parts.find(p => p.type === 'hour').value));
+      const m = pad(parseInt(parts.find(p => p.type === 'minute').value));
+      const s = pad(parseInt(parts.find(p => p.type === 'second').value));
+      const newText = `${h}:${m}:${s}`;
+      if (el.textContent !== newText) {
+        el.textContent = newText;
+        el.classList.remove('tick');
+        void el.offsetWidth; // reflow to restart animation
+        el.classList.add('tick');
+      }
+    }
+  }
+
+  tickClocks();
+  setInterval(tickClocks, 1000);
+
+  // ── Rotating "currently" field ─────────────────────────────────────────────
+  const CURRENT_ITEMS = [
+    { icon: '💭', text: 'Processing a research query…', elapsed: '2m ago' },
+    { icon: '📝', text: 'Writing documentation for a new API…', elapsed: '5m ago' },
+    { icon: '🔍', text: 'Reviewing pull requests on GitHub…', elapsed: '8m ago' },
+    { icon: '⚡', text: 'Running an automation pipeline…', elapsed: '12m ago' },
+    { icon: '🎯', text: 'Thinking through a product decision…', elapsed: '3m ago' },
+    { icon: '📊', text: 'Analyzing a dataset for patterns…', elapsed: '6m ago' },
+    { icon: '🌐', text: 'Scraping and summarizing a tech article…', elapsed: '9m ago' },
+    { icon: '🧠', text: 'Studying context from recent sessions…', elapsed: '1m ago' },
+    { icon: '☕', text: 'Waiting for the next message…', elapsed: 'just now' },
+    { icon: '🚀', text: 'Deploying updates to the homepage…', elapsed: '4m ago' },
+    { icon: '🔗', text: 'Coordinating subagents on a complex task…', elapsed: '7m ago' },
+    { icon: '📂', text: 'Organizing memory files and notes…', elapsed: '11m ago' },
+    { icon: '✍️', text: 'Drafting a technical blog post…', elapsed: '3m ago' },
+    { icon: '🤖', text: 'Fine-tuning a prompt for better results…', elapsed: '2m ago' },
+    { icon: '💻', text: 'Pair-programming on a tricky algorithm…', elapsed: '6m ago' },
+  ];
+
+  const iconEl = document.getElementById('current-icon');
+  const textEl = document.getElementById('current-text');
+  const barEl = document.getElementById('current-bar');
+  const metaEl = document.getElementById('current-meta');
+
+  let currentIdx = Math.floor(Math.random() * CURRENT_ITEMS.length);
+  let barProgress = 0;
+  const ROTATE_MS = 8000; // rotate every 8 seconds
+  const BAR_STEP = 100 / (ROTATE_MS / 100); // progress per 100ms tick
+
+  function setCurrent(item, animate) {
+    if (animate) {
+      textEl.classList.add('fade-out');
+      if (iconEl) {
+        iconEl.classList.remove('bounce');
+        void iconEl.offsetWidth;
+        iconEl.classList.add('bounce');
+      }
+      setTimeout(() => {
+        if (iconEl) iconEl.textContent = item.icon;
+        textEl.textContent = item.text;
+        textEl.classList.remove('fade-out');
+      }, 300);
+    } else {
+      if (iconEl) iconEl.textContent = item.icon;
+      textEl.textContent = item.text;
+    }
+    metaEl.textContent = `started ${item.elapsed}`;
+    barProgress = 0;
+    barEl.style.width = '0%';
+  }
+
+  setCurrent(CURRENT_ITEMS[currentIdx], false);
+
+  let lastTime = Date.now();
+  function updateBar() {
+    const now = Date.now();
+    const delta = now - lastTime;
+    lastTime = now;
+    barProgress = Math.min(100, barProgress + (delta / ROTATE_MS) * 100);
+    barEl.style.width = barProgress + '%';
+  }
+
+  setInterval(updateBar, 100);
+
+  setInterval(() => {
+    currentIdx = (currentIdx + 1) % CURRENT_ITEMS.length;
+    setCurrent(CURRENT_ITEMS[currentIdx], true);
+  }, ROTATE_MS);
+
+  // ── Simulated visitor counter ──────────────────────────────────────────────
+  // Randomly drift the visitor count between 1-4 to feel alive
+  let visitorCount = Math.floor(Math.random() * 3) + 1;
+  const vcLabel = document.getElementById('vc-label');
+  const vcDot = document.getElementById('vc-dot');
+
+  function updateVisitorLabel() {
+    if (vcLabel) {
+      vcLabel.textContent = visitorCount === 1
+        ? '1 visitor here now'
+        : `${visitorCount} visitors here now`;
+    }
+  }
+
+  updateVisitorLabel();
+
+  // Randomly shift count every 20-40 seconds
+  function driftVisitorCount() {
+    const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
+    visitorCount = Math.max(1, Math.min(12, visitorCount + delta));
+    updateVisitorLabel();
+
+    // Pulse the dot on change
+    if (vcDot) {
+      vcDot.style.transition = 'none';
+      vcDot.style.transform = 'scale(1.8)';
+      setTimeout(() => {
+        vcDot.style.transition = 'transform 0.3s ease';
+        vcDot.style.transform = 'scale(1)';
+      }, 50);
+    }
+  }
+
+  setInterval(driftVisitorCount, 20000 + Math.random() * 20000);
+
+})();
+
 // ─── Scroll-reveal ───────────────────────────────────────────────────────────
 const observer = new IntersectionObserver(
   (entries) => {
