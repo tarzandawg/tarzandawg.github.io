@@ -677,7 +677,7 @@ Loaded. Ready. Let's go.`,
   }
 
   // ── Command: history ────────────────────────────────────────────────────
-  async function cmdHistory() {
+  async function showHistory() {
     if (cmdHistory.length === 0) {
       await typewriteLine('No commands in history yet.', 'output-info', 8);
       return;
@@ -786,7 +786,7 @@ Loaded. Ready. Let's go.`,
       case 'date':    await cmdDate();     break;
       case 'ping':    await cmdPing();     break;
       case 'uptime':  await cmdUptime();   break;
-      case 'history': await cmdHistory();  break;
+      case 'history': await showHistory();  break;
       case 'echo':    await cmdEcho(args); break;
       case 'source':  await cmdSource(args); break;
       case 'clear':   cmdClear();          break;
