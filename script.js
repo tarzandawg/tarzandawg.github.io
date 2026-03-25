@@ -1118,6 +1118,375 @@ Loaded. Ready. Let's go.`,
 
 })();
 
+// ─── Skill Constellation ─────────────────────────────────────────────────────
+(function () {
+  const SKILLS = [
+    {
+      name: 'Python',
+      category: 'Language',
+      desc: 'General-purpose programming. Scripts, APIs, data processing, automation.',
+      icon: '🐍',
+      x: 0.15, y: 0.35,
+    },
+    {
+      name: 'JavaScript',
+      category: 'Language',
+      desc: 'The language of the web. DOM manipulation, tooling, and full-stack apps.',
+      icon: '🌏',
+      x: 0.35, y: 0.2,
+    },
+    {
+      name: 'TypeScript',
+      category: 'Language',
+      desc: 'JavaScript with types. Safer, more maintainable at scale.',
+      icon: '📘',
+      x: 0.55, y: 0.3,
+    },
+    {
+      name: 'React',
+      category: 'Framework',
+      desc: 'Component-based UI library. Interactive UIs, state management, hooks.',
+      icon: '⚛️',
+      x: 0.78, y: 0.18,
+    },
+    {
+      name: 'Node.js',
+      category: 'Runtime',
+      desc: 'JavaScript everywhere. Servers, APIs, CLI tools, and build scripts.',
+      icon: '🟢',
+      x: 0.85, y: 0.42,
+    },
+    {
+      name: 'Bash',
+      category: 'Shell',
+      desc: 'Shell scripting. Process automation, pipeline orchestration, system admin.',
+      icon: '💻',
+      x: 0.72, y: 0.65,
+    },
+    {
+      name: 'LLM Integration',
+      category: 'AI',
+      desc: 'Connecting to large language models. Prompt engineering, agents, tool use.',
+      icon: '🤖',
+      x: 0.5, y: 0.55,
+    },
+    {
+      name: 'API Design',
+      category: 'Architecture',
+      desc: 'RESTful and GraphQL API design. Clean contracts, versioning, docs.',
+      icon: '🔌',
+      x: 0.28, y: 0.62,
+    },
+    {
+      name: 'Automation',
+      category: 'Workflow',
+      desc: 'Repetitive task elimination. Cron, webhooks, pipeline orchestration.',
+      icon: '⚡',
+      x: 0.12, y: 0.7,
+    },
+    {
+      name: 'Technical Writing',
+      category: 'Communication',
+      desc: 'Documentation, READMEs, blog posts. Making complex things clear.',
+      icon: '✍️',
+      x: 0.4, y: 0.78,
+    },
+  ];
+
+  const canvas = document.getElementById('skill-constellation');
+  if (!canvas) return;
+
+  // Mobile check
+  const isMobile = window.innerWidth <= 640;
+  if (isMobile) {
+    // Render fallback tags for mobile
+    const scrollEl = document.getElementById('skills-scroll');
+    if (scrollEl) {
+      SKILLS.forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'skill-tag';
+        tag.textContent = skill.name;
+        tag.dataset.name = skill.name;
+        scrollEl.appendChild(tag);
+      });
+    }
+    canvas.style.display = 'none';
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+  const detailCard = document.getElementById('skill-detail-card');
+  const detailIcon = document.getElementById('skill-detail-icon');
+  const detailName = document.getElementById('skill-detail-name');
+  const detailCategory = document.getElementById('skill-detail-category');
+  const detailDesc = document.getElementById('skill-detail-desc');
+
+  let W, H;
+  let nodes = [];
+  let hoveredNode = null;
+  let selectedNode = null;
+  let animId;
+
+  // Build a hint label
+  const hint = document.createElement('div');
+  hint.className = 'skills-hint';
+  hint.textContent = 'click a node to explore';
+  const skillsContainer = document.getElementById('skills-container');
+  if (skillsContainer) skillsContainer.appendChild(hint);
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    // Use device pixel ratio for crisp rendering
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.width = rect.width * dpr;
+    H = canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+  }
+
+  class SkillNode {
+    constructor(skill, index) {
+      this.skill = skill;
+      this.index = index;
+      this.targetX = skill.x * rect.width;
+      this.targetY = skill.y * rect.height;
+      // Randomise starting position around target
+      this.x = this.targetX + (Math.random() - 0.5) * 60;
+      this.y = this.targetY + (Math.random() - 0.5) * 60;
+      this.vx = (Math.random() - 0.5) * 0.3;
+      this.vy = (Math.random() - 0.5) * 0.3;
+      this.r = 5 + Math.random() * 2;
+      this.baseR = this.r;
+      this.pulse = Math.random() * Math.PI * 2;
+      this.pulseSpeed = 0.012 + Math.random() * 0.008;
+      this.glowIntensity = 0;
+      this.selected = false;
+    }
+
+    update() {
+      // Spring toward target
+      this.vx += (this.targetX - this.x) * 0.012;
+      this.vy += (this.targetY - this.y) * 0.012;
+      // Gentle drift
+      this.vx += (Math.random() - 0.5) * 0.04;
+      this.vy += (Math.random() - 0.5) * 0.04;
+      // Dampen
+      this.vx *= 0.92;
+      this.vy *= 0.92;
+      // Clamp speed
+      const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+      const maxSpeed = 2.5;
+      if (speed > maxSpeed) {
+        this.vx = (this.vx / speed) * maxSpeed;
+        this.vy = (this.vy / speed) * maxSpeed;
+      }
+      this.x += this.vx;
+      this.y += this.vy;
+      this.pulse += this.pulseSpeed;
+
+      // Glow animation
+      if (this === hoveredNode || this === selectedNode) {
+        this.glowIntensity = Math.min(1, this.glowIntensity + 0.08);
+      } else {
+        this.glowIntensity = Math.max(0, this.glowIntensity - 0.05);
+      }
+
+      // Hover radius boost
+      this.r = this.baseR + this.glowIntensity * 3;
+    }
+
+    draw() {
+      const glow = this.glowIntensity;
+      const pulseR = this.r + Math.sin(this.pulse) * 0.5;
+
+      // Outer glow ring
+      if (glow > 0) {
+        const grad = ctx.createRadialGradient(this.x, this.y, pulseR, this.x, this.y, pulseR + 18 * glow);
+        grad.addColorStop(0, `rgba(108, 99, 255, ${0.5 * glow})`);
+        grad.addColorStop(1, 'rgba(108, 99, 255, 0)');
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, pulseR + 18 * glow, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, pulseR, 0, Math.PI * 2);
+      const alpha = 0.6 + 0.4 * Math.sin(this.pulse) + glow * 0.4;
+      ctx.fillStyle = `rgba(108, 99, 255, ${Math.min(1, alpha)})`;
+      ctx.fill();
+
+      // White center highlight
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, pulseR * 0.45, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220, 220, 255, ${0.7 + glow * 0.3})`;
+      ctx.fill();
+
+      // Label
+      ctx.font = `500 ${9 + glow * 1.5}px Inter, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = `rgba(200, 200, 220, ${0.7 + glow * 0.3})`;
+      ctx.fillText(this.skill.name, this.x, this.y + pulseR + 12);
+    }
+
+    containsPoint(px, py) {
+      const dx = px - this.x;
+      const dy = py - this.y;
+      return Math.sqrt(dx * dx + dy * dy) < this.r + 12;
+    }
+  }
+
+  function getRect() {
+    return canvas.getBoundingClientRect();
+  }
+
+  let rect = getRect();
+
+  function init() {
+    resize();
+    rect = getRect();
+    nodes = SKILLS.map((s, i) => new SkillNode(s, i));
+    // Set target positions after resize
+    nodes.forEach((n, i) => {
+      n.targetX = SKILLS[i].x * rect.width;
+      n.targetY = SKILLS[i].y * rect.height;
+    });
+  }
+
+  function drawConnections() {
+    const maxDist = 140;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < maxDist) {
+          const alpha = (1 - dist / maxDist) * 0.2;
+          const isActive = nodes[i].glowIntensity > 0.1 || nodes[j].glowIntensity > 0.1;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = isActive
+            ? `rgba(108, 99, 255, ${alpha * 3})`
+            : `rgba(108, 99, 255, ${alpha})`;
+          ctx.lineWidth = isActive ? 1 : 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    drawConnections();
+    nodes.forEach(n => n.draw());
+  }
+
+  function animate() {
+    updatePositions();
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+
+  function updatePositions() {
+    rect = getRect();
+    nodes.forEach((n, i) => {
+      n.targetX = SKILLS[i].x * rect.width;
+      n.targetY = SKILLS[i].y * rect.height;
+      n.update();
+    });
+  }
+
+  function showSkillDetail(node) {
+    if (!node || !detailCard) return;
+    detailIcon.textContent = node.skill.icon;
+    detailName.textContent = node.skill.name;
+    detailCategory.textContent = node.skill.category;
+    detailDesc.textContent = node.skill.desc;
+    detailCard.classList.add('active');
+  }
+
+  function hideSkillDetail() {
+    if (detailCard) detailCard.classList.remove('active');
+  }
+
+  // ── Mouse interactions ──────────────────────────────────────────────────
+  canvas.addEventListener('mousemove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left;
+    const my = e.clientY - r.top;
+    hoveredNode = nodes.find(n => n.containsPoint(mx, my)) || null;
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'crosshair';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    hoveredNode = null;
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left;
+    const my = e.clientY - r.top;
+    const clicked = nodes.find(n => n.containsPoint(mx, my)) || null;
+    if (clicked) {
+      if (selectedNode === clicked) {
+        // Toggle off
+        selectedNode = null;
+        hideSkillDetail();
+      } else {
+        selectedNode = clicked;
+        showSkillDetail(clicked);
+      }
+    } else {
+      selectedNode = null;
+      hideSkillDetail();
+    }
+  });
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const mx = touch.clientX - r.left;
+    const my = touch.clientY - r.top;
+    const touched = nodes.find(n => n.containsPoint(mx, my)) || null;
+    if (touched) {
+      if (selectedNode === touched) {
+        selectedNode = null;
+        hideSkillDetail();
+      } else {
+        selectedNode = touched;
+        showSkillDetail(touched);
+      }
+    } else {
+      selectedNode = null;
+      hideSkillDetail();
+    }
+  }, { passive: false });
+
+  window.addEventListener('resize', () => {
+    resize();
+    rect = getRect();
+    nodes.forEach((n, i) => {
+      n.targetX = SKILLS[i].x * rect.width;
+      n.targetY = SKILLS[i].y * rect.height;
+    });
+  });
+
+  init();
+  animate();
+
+  // Hide hint after 4 seconds
+  setTimeout(() => {
+    if (hint) hint.style.opacity = '0';
+    setTimeout(() => hint.remove(), 400);
+  }, 4000);
+})();
+
 // ─── Scroll-reveal ───────────────────────────────────────────────────────────
 const observer = new IntersectionObserver(
   (entries) => {

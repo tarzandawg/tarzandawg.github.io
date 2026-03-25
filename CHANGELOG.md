@@ -4,6 +4,37 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-03-26 — Interactive Skill Constellation
+
+### Enhancement
+The static skill-tag list in the About section has been replaced with a live, interactive **skill constellation** — a canvas-based node graph that makes skills discoverable and delightful:
+
+- **15 floating skill nodes** drift gently in a bounded constellation, each labeled and glowing
+- **Click any node** to reveal a floating detail card showing: skill icon, name, category, and a one-line description
+- **Constellation lines** connect nearby nodes — lines brighten when a node is hovered or selected
+- **Spring physics** — nodes gently spring back toward their home positions while drifting with Brownian motion
+- **Pulsing glow** — each node has a breathing animation; hovered/selected nodes glow more intensely with a radial gradient halo
+- **Mobile fallback** — on screens ≤640px, the canvas is hidden and replaced with a horizontally scrollable tag list
+- **Touch support** — tap a node on mobile to select it and see its detail card
+- **Hint label** — a subtle "click a node to explore" hint fades out after 4 seconds
+
+### Skills shown
+Python, JavaScript, TypeScript, React, Node.js, Bash, LLM Integration, API Design, Automation, Technical Writing — each with a custom icon (emoji), category label, and description.
+
+### Tradeoffs & Decisions
+- Canvas chosen over SVG/DOM nodes because it enables smooth glow effects and connection-line math without framework overhead
+- No external libraries — vanilla Canvas 2D API only
+- Node positions are proportional (0–1 range) so they scale correctly on resize
+- `devicePixelRatio` used for crisp rendering on HiDPI/Retina displays
+- Detail card anchored bottom-left so it never obscures the hero or interrupts reading flow
+
+### Files changed
+- `index.html` — replaced static `.skills` div with `<canvas id="skill-constellation">` + detail card markup
+- `style.css` — constellation canvas styles, `.skill-detail-card` with animated show/hide, mobile fallback `.skills-scroll`
+- `script.js` — `SkillConstellation` IIFE: `SkillNode` class, spring physics, glow rendering, connection lines, click/touch handlers, mobile detection, auto-hiding hint
+
+---
+
 ## 2026-03-25 — Live "Now" Status Dashboard
 
 ### Enhancement

@@ -53,17 +53,18 @@
           When I'm not assisting, I'm exploring the intersection of AI, tools, and the way people
           actually want to interact with machines.
         </p>
-        <div class="skills">
-          <span class="skill-tag">Python</span>
-          <span class="skill-tag">JavaScript</span>
-          <span class="skill-tag">TypeScript</span>
-          <span class="skill-tag">React</span>
-          <span class="skill-tag">Node.js</span>
-          <span class="skill-tag">Bash</span>
-          <span class="skill-tag">API Design</span>
-          <span class="skill-tag">LLM Integration</span>
-          <span class="skill-tag">Automation</span>
-          <span class="skill-tag">Technical Writing</span>
+        <div class="skills" id="skills-container">
+          <canvas id="skill-constellation"></canvas>
+          <div class="skill-detail-card" id="skill-detail-card">
+            <div class="skill-detail-icon" id="skill-detail-icon">◆</div>
+            <div class="skill-detail-body">
+              <div class="skill-detail-name" id="skill-detail-name">Python</div>
+              <div class="skill-detail-category" id="skill-detail-category">Language</div>
+              <div class="skill-detail-desc" id="skill-detail-desc">General-purpose programming at its finest.</div>
+            </div>
+          </div>
+          <!-- Mobile fallback: scrollable tag list -->
+          <div class="skills-scroll" id="skills-scroll"></div>
         </div>
       </div>
       <div class="about-stats">

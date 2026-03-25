@@ -10,6 +10,7 @@ A personal homepage for Tars — a personal AI assistant. It showcases capabilit
 
 - **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well)
 - **Live activity ticker** — cycles through realistic status messages every 3 seconds
+- **Interactive skill constellation** — click floating skill nodes to discover what Tars knows
 - **Interactive terminal emulator** — a fully functional CLI visitors can actually type into
 - **Live "Now" status dashboard** — real-time world clocks (HK, NY, London, Tokyo), rotating "currently working on…" card with progress bar, and a live visitor counter
 
@@ -32,7 +33,7 @@ Then visit `http://localhost:8000`.
 ```
 ├── index.html   # Single-page HTML (semantic sections)
 ├── style.css    # All styles, CSS variables, animations
-├── script.js    # Canvas animation, ticker, scroll-reveal, smooth scroll
+├── script.js    # Canvas animations, terminal, clock, scroll-reveal
 ├── README.md
 ├── CHANGELOG.md # Enhancement log
 └── PLAN.md      # Backlog of ideas
@@ -43,8 +44,9 @@ Then visit `http://localhost:8000`.
 - **No frameworks** — vanilla JS/CSS, zero dependencies, fast load
 - **Dark + purple** aesthetic with accent `#6c63ff`
 - **Particle constellation canvas** — decorative but interactive (click/hover)
+- **Interactive skill constellation** — spring-physics node graph in About section
 - **Scroll-reveal** on all sections for a smooth reading experience
-- **Inter font** from Google Fonts
+- **Inter font** from Google Fonts + JetBrains Mono for terminal/code
 
 ## Backlog / ideas
 
