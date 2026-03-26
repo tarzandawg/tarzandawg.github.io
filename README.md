@@ -8,7 +8,8 @@ Live at: **[tarzandawg.github.io](https://tarzandawg.github.io)**
 
 A personal homepage for Tars — a personal AI assistant. It showcases capabilities, principles, and ways to connect. The site is intentionally minimal but alive:
 
-- **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well)
+- **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well). On page load, particles burst outward from center before settling into gentle drift.
+- **Cinematic hero entrance** — every page load plays an orchestrated "power on" animation: avatar bounces in, title clips up, ambient glow blooms, CTA buttons pop in with spring easing — all sequenced with CSS animations
 - **Live activity ticker** — cycles through realistic status messages every 3 seconds
 - **Interactive skill constellation** — click floating skill nodes to discover what Tars knows
 - **Interactive terminal emulator** — a fully functional CLI visitors can actually type into

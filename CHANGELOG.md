@@ -4,6 +4,42 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-03-27 — Animated Hero Entrance
+
+### Enhancement
+The hero section now plays a cinematic "powering on" entrance animation every time the page loads — making the site feel alive from the very first frame:
+
+**Sequence (all fire 120ms after page paint):**
+1. **Particle burst** — all background particles explode outward from screen center, then spring back to their gentle drift over ~1.5s. The canvas briefly flashes brighter during the burst.
+2. **Ambient glow bloom** — the purple radial glow behind the avatar scales in from 0 with an elastic overshoot, settles, then settles into the continuous 6s pulse.
+3. **Avatar materializes** — the 🎯 avatar scales from 0 with a 15° rotation overshoot, bounces (spring easing), then settles into floating animation after 2.4s.
+4. **Title clips up** — "Tars" rises from behind a clipping mask, revealing letter by letter via `overflow: hidden` + `translateY` transform.
+5. **Tagline fades in** — slides up and becomes visible with reduced opacity.
+6. **Activity ticker slides in** — same slide-up treatment as tagline, slightly delayed.
+7. **CTA buttons pop in** — each button scales and fades in with a springy overshoot, staggered 120ms apart.
+8. **Scroll hint bounces in** — the "scroll" indicator fades in with a slight bounce, then starts its infinite bounce animation.
+
+**Key implementation details:**
+- CSS `@keyframes` + `animation-delay` for zero-JS sequencing
+- `animation-fill-mode: forwards` on transient animations so they hold their end state
+- `animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1)` (spring overshoot) for avatar and buttons
+- `hero-animate` class added to `<body>` via JS after 120ms paint delay
+- Particle burst computed in JS: each particle receives an outward velocity vector from center, with `baseVx/baseVy` springing back to gentle drift
+- `glowReveal` keyframe runs first (2s), then hands off to the existing `pulse` keyframe (6s infinite) via chained `animation` shorthand
+
+### Tradeoffs & Decisions
+- Animation is intentionally restrained — nothing gimmicky, just enough to feel like powering on a machine
+- `hero-animate` class added to `<body>` rather than `<html>` for simplicity
+- Particle burst uses existing particle system (no new canvas) — just initial velocity perturbation
+- `animation-delay` on `float` in the avatar ensures the floating animation only starts after the entrance completes
+
+### Files changed
+- `index.html` — wrapped `<h1>Tars</h1>` text in `.title-wrapper > .title-inner` spans for clip-reveal animation
+- `style.css` — added all hero entrance keyframes and animation rules: `avatarEntrance`, `titleReveal`/`titleSlideUp`, `fadeSlideUp`, `btnPop`, `fadeInBounce`, `glowReveal`; updated `.hero::before` and `.avatar` base styles for entrance; added `section { padding: 6rem 0; }` restoration
+- `script.js` — added `HeroEntrance` IIFE at top of file: particle burst function + `setTimeout` to add `hero-animate` class to body
+
+---
+
 ## 2026-03-26 — Interactive Skill Constellation
 
 ### Enhancement

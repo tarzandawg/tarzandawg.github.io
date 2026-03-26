@@ -1,3 +1,38 @@
+// ─── Hero Entrance + Particle Burst ──────────────────────────────────────────
+(function () {
+  // Brief delay so the page paints first, then animate in
+  const ENTER_DELAY_MS = 120;
+
+  function burstParticles() {
+    if (!particles || !canvas) return;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    particles.forEach(p => {
+      // Direction from center to particle
+      const dx = p.x - cx;
+      const dy = p.y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      // Burst velocity: outward + some randomness
+      const burstStrength = 4 + Math.random() * 4;
+      p.vx = (dx / dist) * burstStrength + (Math.random() - 0.5) * 2;
+      p.vy = (dy / dist) * burstStrength + (Math.random() - 0.5) * 2;
+      p.baseVx = p.vx * 0.15; // spring back to gentle drift
+      p.baseVy = p.vy * 0.15;
+    });
+    // Flash the canvas
+    if (canvas) {
+      canvas.classList.remove('burst');
+      void canvas.offsetWidth;
+      canvas.classList.add('burst');
+    }
+  }
+
+  setTimeout(() => {
+    burstParticles();
+    document.body.classList.add('hero-animate');
+  }, ENTER_DELAY_MS);
+})();
+
 // ─── Current Activity Ticker ─────────────────────────────────────────────────
 const activities = [
   "Monitoring GitHub for interesting repos…",
