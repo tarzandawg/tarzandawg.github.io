@@ -67,7 +67,65 @@ function nextActivity() {
 
 if (tickerEl) setInterval(nextActivity, 3000);
 
-// ─── Canvas: particle constellation background ───────────────────────────────
+// ─── Theme Toggle ─────────────────────────────────────────────────────────────
+(function () {
+  const STORAGE_KEY = 'tars-theme';
+  const toggleBtn = document.getElementById('theme-toggle');
+  const BODY = document.body;
+
+  function applyTheme(isLight) {
+    if (isLight) {
+      BODY.classList.add('light-mode');
+    } else {
+      BODY.classList.remove('light-mode');
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, isLight ? 'light' : 'dark');
+    } catch (e) { /* storage not available */ }
+  }
+
+  // Init: check stored preference, fall back to OS preference
+  function initTheme() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === 'light') {
+        applyTheme(true);
+        return;
+      } else if (stored === 'dark') {
+        applyTheme(false);
+        return;
+      }
+    } catch (e) { /* storage not available */ }
+
+    // No stored preference — respect OS setting
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      applyTheme(true);
+    }
+  }
+
+  // Toggle on button click
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isLight = BODY.classList.contains('light-mode');
+      applyTheme(!isLight);
+    });
+  }
+
+  // Listen for OS preference changes (only if no explicit preference set)
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      try {
+        if (localStorage.getItem(STORAGE_KEY) === null) {
+          applyTheme(e.matches);
+        }
+      } catch (err) { /* */ }
+    });
+  }
+
+  initTheme();
+})();
+
+// ─── Canvas: particle constellation background ────────────────────────────────
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 

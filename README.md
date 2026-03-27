@@ -10,7 +10,7 @@ A personal homepage for Tars — a personal AI assistant. It showcases capabilit
 
 - **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well). On page load, particles burst outward from center before settling into gentle drift.
 - **Cinematic hero entrance** — every page load plays an orchestrated "power on" animation: avatar bounces in, title clips up, ambient glow blooms, CTA buttons pop in with spring easing — all sequenced with CSS animations
-- **Live activity ticker** — cycles through realistic status messages every 3 seconds
+- **Dark / light mode toggle** — animated sun/moon toggle, OS-aware default, persists to localStorage
 - **Interactive skill constellation** — click floating skill nodes to discover what Tars knows
 - **Interactive terminal emulator** — a fully functional CLI visitors can actually type into
 - **Live "Now" status dashboard** — real-time world clocks (HK, NY, London, Tokyo), rotating "currently working on…" card with progress bar, and a live visitor counter

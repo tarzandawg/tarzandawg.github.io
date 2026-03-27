@@ -14,10 +14,214 @@
   --border: #1e1e2e;
 }
 
+/* ─── Light Mode ─────────────────────────────────────────────────────────── */
+body.light-mode {
+  --bg: #f5f4f9;
+  --bg-card: #ffffff;
+  --accent: #6c63ff;
+  --accent-glow: rgba(108, 99, 255, 0.2);
+  --text: #1a1a2e;
+  --text-muted: #5a5a7a;
+  --border: #ddddf0;
+}
+
+body.light-mode {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body.light-mode .card,
+body.light-mode .terminal-window,
+body.light-mode .current-card,
+body.light-mode .clock-row,
+body.light-mode .visitor-counter,
+body.light-mode .link-card,
+body.light-mode .terminal-titlebar {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+body.light-mode .card:hover,
+body.light-mode .current-card:hover,
+body.light-mode .clock-row:hover,
+body.light-mode .visitor-counter:hover,
+body.light-mode .link-card:hover {
+  border-color: var(--accent);
+}
+
+body.light-mode section {
+  background: var(--bg);
+}
+
+body.light-mode #work,
+body.light-mode #contact {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+
+body.light-mode .hero::before {
+  background: radial-gradient(circle, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
+}
+
+body.light-mode .avatar {
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  box-shadow: 0 0 40px rgba(108, 99, 255, 0.35);
+}
+
+body.light-mode .btn-primary {
+  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.35);
+}
+
+body.light-mode .btn-primary:hover {
+  box-shadow: 0 6px 30px rgba(108, 99, 255, 0.45);
+}
+
+body.light-mode .hero h1 {
+  background: linear-gradient(135deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode .scroll-hint {
+  color: var(--text-muted);
+}
+
+body.light-mode .current-card::before {
+  background: radial-gradient(circle, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
+}
+
+body.light-mode .divider {
+  background: linear-gradient(90deg, var(--accent), #a855f7);
+}
+
+body.light-mode .section-title {
+  color: var(--text);
+}
+
+body.light-mode .section-label {
+  color: var(--accent);
+}
+
+body.light-mode footer {
+  border-top-color: var(--border);
+}
+
+body.light-mode .terminal-window {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 40px rgba(108, 99, 255, 0.06);
+}
+
+body.light-mode .terminal-line {
+  color: #2a2a3e;
+}
+
+body.light-mode .terminal-line.cmd-echo {
+  color: #4a4a6e;
+}
+
+body.light-mode .skill-constellation {
+  background: rgba(245, 244, 249, 0.6);
+  border-color: var(--border);
+}
+
+body.light-mode .skill-detail-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+body.light-mode .about-text p,
+body.light-mode .card p,
+body.light-mode .current-text {
+  color: var(--text-muted);
+}
+
+body.light-mode .current-bar {
+  background: var(--border);
+}
+
+body.light-mode .vc-dot {
+  background: #28c840;
+}
+
+/* ─── Theme Toggle Button ─────────────────────────────────────────────────── */
+.theme-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95) rotate(0deg);
+}
+
+.toggle-icon {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+}
+
+.toggle-icon-sun {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+
+.toggle-icon-moon {
+  transform: rotate(-90deg) scale(0.5);
+  opacity: 0;
+}
+
+/* Light mode: show sun icon (switching FROM light) */
+body.light-mode .toggle-icon-sun {
+  transform: rotate(90deg) scale(0.5);
+  opacity: 0;
+}
+
+body.light-mode .toggle-icon-moon {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .theme-toggle {
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+  }
+
+  .toggle-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
+/* Global color transition on theme switch */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
@@ -25,6 +229,23 @@ body {
   line-height: 1.7;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+*, *::before, *::after {
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+
+/* Opt out of transform/opacity transitions that are already animation-based */
+canvas,
+.btn,
+.avatar,
+.hero::before,
+.scroll-hint,
+.current-icon,
+.current-bar-fill,
+.current-bar-fill {
+  transition: none;
 }
 
 .container {

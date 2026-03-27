@@ -4,6 +4,33 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-03-28 — Dark / Light Mode Toggle
+
+### Enhancement
+A polished theme toggle button has been added to the top-right corner of the page, allowing visitors to switch between dark and light modes:
+
+- **Beautiful animated toggle button** — a circular button with a sun/moon SVG icon pair. When toggled, the active icon scales in while the other rotates out with spring easing, creating a smooth morphing transition
+- **Persistent preference** — the chosen theme is saved to `localStorage` and restored on the next visit. No jarring flash on reload
+- **OS-aware default** — if no explicit preference is stored, the toggle respects `prefers-color-scheme`. First visitors see the dark theme (default), but OS light-mode users get light mode automatically
+- **OS change listener** — if the user hasn't manually toggled, switching the OS setting live updates the theme
+- **Full color system** — all CSS custom properties have light-mode values: `--bg`, `--bg-card`, `--text`, `--text-muted`, `--border`, `--accent-glow`. Every element (cards, terminal, clocks, skills, etc.) transitions smoothly at 0.4s
+- **Light mode palette** — warm off-white `#f5f4f9` background, white cards, deep purple accent, warm gray text. Not a flat white — intentionally soft to complement the purple accent
+- **Fully accessible** — button has `aria-label` and `title`, SVG icons are decorative (not announced), focus states are clean
+- **Subtle interactions** — toggle button has a spring-scale + rotate on hover, press-down on click
+
+### Tradeoffs & Decisions
+- Chose a fixed top-right corner toggle (rather than inline in the hero) so it's accessible from anywhere on the page
+- Used `localStorage` for persistence — simple, no backend, works on GitHub Pages
+- CSS `transition` on `*` could theoretically conflict with existing animations, but explicit `transition: none` is applied to canvas elements and elements using keyframe animations (avatar, scroll-hint, etc.)
+- Light mode background is `#f5f4f9` (warm off-white), not pure `#ffffff` — feels less sterile while still being clearly "light"
+
+### Files changed
+- `index.html` — added `<button id="theme-toggle">` with sun/moon SVG icons
+- `style.css` — added `.light-mode` CSS custom properties override block, `.theme-toggle` button styles, `transition` rules on body and global `*`
+- `script.js` — added `ThemeToggle` IIFE: `applyTheme()`, `initTheme()` with localStorage + OS preference fallback, click handler, OS `change` listener
+
+---
+
 ## 2026-03-27 — Animated Hero Entrance
 
 ### Enhancement
