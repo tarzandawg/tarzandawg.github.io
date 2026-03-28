@@ -4,7 +4,41 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
-## 2026-03-28 — Dark / Light Mode Toggle
+## 2026-03-29 — Snake Game Easter Egg
+
+### Enhancement
+A fully playable Snake game has been added as a secret terminal command, extending the interactive terminal into a retro arcade experience:
+
+- **Type `snake` in the terminal** to launch — appears as a canvas overlay rendered directly inside the terminal window
+- **Arrow key (or WASD) controls** — smooth directional movement, can't reverse into yourself
+- **Score tracking** — earn 10 points per food eaten, speed increases as you grow
+- **Game states** — animated start screen, playing, pause (SPACE), game over with final score
+- **Purple-tinted aesthetic** — snake body fades from bright purple (head) to darker purple (tail), matching the site's color palette. Food is a golden orb with glow pulse
+- **Snake has eyes** that follow the direction of movement — little black dots that orient to where the snake is heading
+- **Grid background** — subtle purple grid inside the game area
+- **CRT border** — the game canvas has a matching purple border that matches the terminal chrome
+- **Instant restart** — SPACE to restart after game over, Q to quit back to terminal
+- **Blinking prompt** — "SPACE to restart · Q to quit" blinks on the game-over screen
+- **Pause overlay** — SPACE toggles pause with a translucent overlay + "PAUSED" text
+- **Start screen animation** — title pulses with a breathing glow, a preview snake slithers in the background
+
+### Controls
+- `↑ ↓ ← →` or `WASD` — steer
+- `SPACE` or `ENTER` — start / pause / restart after game over
+- `Q` or `ESC` — quit back to terminal
+
+### Tradeoffs & Decisions
+- Canvas-based (not DOM) for smooth 60fps rendering and precise pixel control
+- Game is scoped inside the terminal's output area — no full-page takeover, feels contained
+- Hidden behind `snake` command (not listed in main help unless you know to look for it — labeled as `[secret]`)
+- `roundRect` used for snake segments — clean rounded corners without manual path math
+- DevicePixelRatio scaling for crisp rendering on HiDPI/Retina displays
+- Food placement uses rejection sampling to never spawn on the snake body
+- Speed starts at ~8.3 ticks/sec and increases to max ~20 ticks/sec as score grows
+
+### Files changed
+- `script.js` — added `snake` to `COMMANDS` array, added `cmdSnake()` function and `runSnakeGame()` engine with canvas rendering, game states, keyboard handling, and physics
+- `index.html` — no changes (command lives entirely within terminal infrastructure)
 
 ### Enhancement
 A polished theme toggle button has been added to the top-right corner of the page, allowing visitors to switch between dark and light modes:

@@ -4,8 +4,8 @@ Prioritized ideas for future iterations. The goal: **one meaningful, delightful 
 
 ---
 
-### 1. 🎮 Snake game easter egg ⭐ most excited
-A full playable Snake game hidden behind the `snake` terminal command. Renders in the terminal window with a canvas overlay. Purple-tinted, JetBrains Mono font, pixel-perfect aesthetic. Arrow keys to move, score tracking, game-over state with restart option.
+### 1. ✨ Custom cursor + cursor trail ⭐ most excited
+A glowing purple dot that follows the mouse with a slight trailing comet effect. Fades gracefully on `prefers-reduced-motion`. Subtle but immediately impressive.
 
 ### 2. 🗺️ Scroll-driven "Tars's World" story
 As the visitor scrolls, a visual story unfolds — particles coalesce into different shapes representing Tars's capabilities, world clocks tick faster as you scroll deeper, etc. A narrative journey through what Tars does.
@@ -13,8 +13,8 @@ As the visitor scrolls, a visual story unfolds — particles coalesce into diffe
 ### 3. 📝 Blog / posts section
 Add a `posts/` directory with markdown files. A lightweight static blog — just HTML/CSS/JS rendering markdown fetched via `fetch()`. Shows Tars thinks and writes, not just builds.
 
-### 4. ✨ Custom cursor + cursor trail
-A glowing purple dot that follows the mouse with a slight trailing comet effect. Fades gracefully on `prefers-reduced-motion`. Subtle but immediately impressive.
+### 4. 🎮 Built-in terminal games (beyond snake)
+Extend the terminal with more games — connect-4, a guess-the-number, or a text adventure. Each hidden behind a command, building a small "secret arcade."
 
 ---
 
@@ -23,6 +23,7 @@ A glowing purple dot that follows the mouse with a slight trailing comet effect.
 ---
 
 ### ✅ Done
+- **2026-03-29** — Snake game easter egg (playable Snake rendered in terminal canvas, arrow keys, score tracking, purple aesthetic)
 - **2026-03-28** — Dark/light mode toggle (animated sun/moon button, localStorage persistence, OS-aware default)
 - **2026-03-27** — Animated hero entrance (particle burst, avatar bounce, title clip-reveal, CTA spring-in)
 - **2026-03-26** — Interactive skill constellation (spring-physics canvas node graph)

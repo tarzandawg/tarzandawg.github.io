@@ -471,7 +471,7 @@ A perfect cup of code fuel.
 Loaded. Ready. Let's go.`,
   };
 
-  const COMMANDS = ['help', 'whoami', 'skills', 'ls', 'cat', 'date', 'ping', 'clear', 'history', 'echo', 'source', 'uptime', 'matrix', 'exit'];
+  const COMMANDS = ['help', 'whoami', 'skills', 'ls', 'cat', 'date', 'ping', 'clear', 'history', 'echo', 'source', 'uptime', 'matrix', 'snake', 'exit'];
   const KNOWN_FILES = Object.keys(VFS);
 
   // State
@@ -626,6 +626,7 @@ Loaded. Ready. Let's go.`,
       { t: '  echo <text>   echo back your text', c: 'output' },
       { t: '  source <file> alias for cat', c: 'output' },
       { t: '  clear         clear the terminal', c: 'output' },
+      { t: '  snake        [secret] play snake!', c: 'output-warn' },
       { t: '  matrix        [secret] easter egg', c: 'output-warn' },
       { t: '─'.repeat(42), c: 'output-purple' },
       { t: '  ↑ / ↓        navigate command history', c: 'output-info' },
@@ -852,6 +853,421 @@ Loaded. Ready. Let's go.`,
     await typewriteLine('[ Matrix mode deactivated. Return to the terminal. ]', 'output-warn', 10);
   }
 
+  // ── Command: snake ──────────────────────────────────────────────────────
+  async function cmdSnake() {
+    if (isMatrixRunning) {
+      await typewriteLine('Cannot start Snake while Matrix is running.', 'output-error', 8);
+      return;
+    }
+    // Pause the boot/output typewriter so the canvas can render cleanly
+    // Hide the terminal input row
+    const inputRow = document.querySelector('.terminal-input-row');
+    const terminalPrompt = document.querySelector('.terminal-prompt');
+    if (inputRow) inputRow.style.visibility = 'hidden';
+    if (terminalPrompt) terminalPrompt.style.visibility = 'hidden';
+
+    const gameCanvas = document.createElement('canvas');
+    gameCanvas.id = 'snake-canvas';
+    Object.assign(gameCanvas.style, {
+      display: 'block',
+      margin: '0 auto 0.5rem',
+      borderRadius: '4px',
+      border: '1px solid #2a2a3e',
+      background: '#0a0a12',
+      maxWidth: '100%',
+    });
+
+    // Center the canvas in the output area
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 0.25rem; margin: 0.5rem 0;';
+    wrapper.appendChild(gameCanvas);
+
+    // Score + instructions line
+    const infoLine = document.createElement('div');
+    infoLine.id = 'snake-info';
+    Object.assign(infoLine.style, {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: '0.78rem',
+      color: '#6c63ff',
+      textAlign: 'center',
+      letterSpacing: '0.05em',
+    });
+    wrapper.appendChild(infoLine);
+
+    outputEl.appendChild(wrapper);
+    scrollToBottom();
+
+    // Start game
+    runSnakeGame(gameCanvas, infoLine, () => {
+      // onEnd callback: restore terminal
+      if (inputRow) inputRow.style.visibility = 'visible';
+      if (terminalPrompt) terminalPrompt.style.visibility = 'visible';
+      wrapper.remove();
+      scrollToBottom();
+      inputEl.focus();
+    });
+  }
+
+  function runSnakeGame(canvas, infoEl, onEnd) {
+    const COLS = 20;
+    const ROWS = 14;
+    const CELL = 18;
+    const W = COLS * CELL;
+    const H = ROWS * CELL;
+
+    // Size the canvas to the terminal font scale
+    canvas.width = W;
+    canvas.height = H;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // State
+    let snake, dir, nextDir, food, score, speed, animId, lastTime;
+    let state = 'start'; // 'start' | 'playing' | 'paused' | 'gameover'
+    let titleFrame = 0;
+
+    function initGame() {
+      snake = [{ x: 10, y: 7 }];
+      dir = { x: 1, y: 0 };
+      nextDir = { x: 1, y: 0 };
+      score = 0;
+      speed = 120; // ms per tick
+      placeFood();
+      state = 'playing';
+    }
+
+    function placeFood() {
+      let pos;
+      do {
+        pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+      } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      food = pos;
+    }
+
+    function updateInfo() {
+      if (!infoEl) return;
+      if (state === 'start') {
+        infoEl.textContent = 'SNAKE  ·  ↑ ↓ ← → to move  ·  SPACE to start  ·  Q to quit';
+      } else if (state === 'playing' || state === 'paused') {
+        infoEl.textContent = `SCORE: ${score}  ·  SPEED: ${Math.round(1000 / speed)}x  ·  SPACE pause  ·  Q quit`;
+      } else if (state === 'gameover') {
+        infoEl.textContent = `GAME OVER  ·  Final score: ${score}  ·  SPACE to restart  ·  Q to quit`;
+      }
+    }
+
+    function tick() {
+      dir = { ...nextDir };
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      // Wall collision
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+        state = 'gameover';
+        updateInfo();
+        return;
+      }
+      // Self collision
+      if (snake.some(s => s.x === head.x && s.y === head.y)) {
+        state = 'gameover';
+        updateInfo();
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        // Speed up slightly
+        speed = Math.max(50, speed - 2);
+        placeFood();
+        updateInfo();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(108, 99, 255, 0.07)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * CELL, 0);
+        ctx.lineTo(x * CELL, H);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * CELL);
+        ctx.lineTo(W, y * CELL);
+        ctx.stroke();
+      }
+    }
+
+    function drawSnake() {
+      snake.forEach((seg, i) => {
+        const isHead = i === 0;
+        const brightness = 1 - (i / snake.length) * 0.5;
+        const r = Math.round(108 * brightness);
+        const g = Math.round(99 * brightness);
+        const b = Math.round(255 * brightness);
+        const padding = 1;
+        const x = seg.x * CELL + padding;
+        const y = seg.y * CELL + padding;
+        const size = CELL - padding * 2;
+        const radius = isHead ? 4 : 3;
+
+        // Glow
+        if (isHead) {
+          ctx.shadowColor = `rgba(167, 139, 250, 0.9)`;
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.beginPath();
+        ctx.roundRect(x, y, size, size, radius);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Head eyes
+        if (isHead) {
+          ctx.fillStyle = '#0a0a12';
+          const eyeSize = 2.5;
+          const eyeOffset = 4;
+          if (dir.x === 1) {
+            ctx.beginPath(); ctx.arc(x + size - eyeOffset, y + eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + size - eyeOffset, y + size - eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+          } else if (dir.x === -1) {
+            ctx.beginPath(); ctx.arc(x + eyeOffset, y + eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + eyeOffset, y + size - eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+          } else if (dir.y === -1) {
+            ctx.beginPath(); ctx.arc(x + eyeOffset, y + eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + size - eyeOffset, y + eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.beginPath(); ctx.arc(x + eyeOffset, y + size - eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + size - eyeOffset, y + size - eyeOffset, eyeSize, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+      });
+    }
+
+    function drawFood() {
+      const cx = food.x * CELL + CELL / 2;
+      const cy = food.y * CELL + CELL / 2;
+      const pulseR = 2 + Math.sin(Date.now() / 200) * 1.5;
+
+      // Outer glow
+      ctx.shadowColor = 'rgba(251, 191, 36, 0.8)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(cx, cy, CELL / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Shine
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath();
+      ctx.arc(cx - 2, cy - 2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawBorder() {
+      ctx.strokeStyle = '#6c63ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, W, H);
+    }
+
+    function drawStartScreen() {
+      ctx.clearRect(0, 0, W, H);
+      drawBorder();
+      drawGrid();
+
+      // Animated title
+      ctx.font = "bold 20px 'JetBrains Mono', monospace";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Title glow
+      const glowIntensity = (Math.sin(titleFrame * 0.06) + 1) / 2;
+      ctx.shadowColor = `rgba(108, 99, 255, ${0.5 + glowIntensity * 0.5})`;
+      ctx.shadowBlur = 8 + glowIntensity * 8;
+      ctx.fillStyle = '#6c63ff';
+      ctx.fillText('S N A K E', W / 2, H / 2 - 30);
+      ctx.shadowBlur = 0;
+
+      // Subtitle
+      ctx.font = "10px 'JetBrains Mono', monospace";
+      ctx.fillStyle = '#5a5a7a';
+      ctx.fillText('TARS EDITION', W / 2, H / 2 - 8);
+
+      // Snake preview
+      const previewSnake = [
+        { x: 7, y: 7 }, { x: 8, y: 7 }, { x: 9, y: 7 }, { x: 10, y: 7 }, { x: 11, y: 7 }, { x: 12, y: 7 }
+      ];
+      previewSnake.forEach((seg, i) => {
+        const isHead = i === previewSnake.length - 1;
+        ctx.fillStyle = isHead ? '#a78bfa' : '#6c63ff';
+        if (isHead) { ctx.shadowColor = 'rgba(167,139,250,0.8)'; ctx.shadowBlur = 8; }
+        ctx.beginPath();
+        ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, isHead ? 4 : 3);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Preview food
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = 'rgba(251, 191, 36, 0.8)';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(4 * CELL + CELL / 2, 7 * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      titleFrame++;
+    }
+
+    function drawGameOver() {
+      ctx.fillStyle = 'rgba(10, 10, 18, 0.85)';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.font = "bold 16px 'JetBrains Mono', monospace";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(255, 95, 87, 0.8)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#ff5f57';
+      ctx.fillText('GAME OVER', W / 2, H / 2 - 22);
+      ctx.shadowBlur = 0;
+
+      ctx.font = "12px 'JetBrains Mono', monospace";
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(`SCORE: ${score}`, W / 2, H / 2 + 4);
+
+      const blink = Math.floor(Date.now() / 500) % 2 === 0;
+      if (blink) {
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = '#5a5a7a';
+        ctx.fillText('SPACE to restart  ·  Q to quit', W / 2, H / 2 + 26);
+      }
+    }
+
+    function drawPlaying() {
+      ctx.clearRect(0, 0, W, H);
+      drawBorder();
+      drawGrid();
+      drawFood();
+      drawSnake();
+    }
+
+    // Game loop
+    let lastTick = 0;
+    function gameLoop(timestamp) {
+      if (state === 'start') {
+        drawStartScreen();
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (state === 'gameover') {
+        drawPlaying();
+        drawGameOver();
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (state === 'paused') {
+        drawPlaying();
+        // Draw PAUSED overlay
+        ctx.fillStyle = 'rgba(10, 10, 18, 0.6)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.font = "bold 14px 'JetBrains Mono', monospace";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#6c63ff';
+        ctx.fillText('PAUSED', W / 2, H / 2);
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      // Playing
+      if (timestamp - lastTick >= speed) {
+        tick();
+        lastTick = timestamp;
+      }
+      drawPlaying();
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    // Keyboard handler — scoped to snake game
+    function handleKey(e) {
+      if (state === 'gameover') {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          initGame();
+          updateInfo();
+        } else if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+          quitGame();
+        }
+        return;
+      }
+
+      if (state === 'start') {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          initGame();
+          updateInfo();
+        } else if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+          quitGame();
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowUp':    case 'w': case 'W':
+          e.preventDefault();
+          if (dir.y !== 1) nextDir = { x: 0, y: -1 };
+          break;
+        case 'ArrowDown':  case 's': case 'S':
+          e.preventDefault();
+          if (dir.y !== -1) nextDir = { x: 0, y: 1 };
+          break;
+        case 'ArrowLeft':  case 'a': case 'A':
+          e.preventDefault();
+          if (dir.x !== 1) nextDir = { x: -1, y: 0 };
+          break;
+        case 'ArrowRight': case 'd': case 'D':
+          e.preventDefault();
+          if (dir.x !== -1) nextDir = { x: 1, y: 0 };
+          break;
+        case ' ':
+          e.preventDefault();
+          state = state === 'paused' ? 'playing' : 'paused';
+          updateInfo();
+          break;
+        case 'q': case 'Q': case 'Escape':
+          quitGame();
+          break;
+      }
+    }
+
+    function quitGame() {
+      document.removeEventListener('keydown', handleKey);
+      cancelAnimationFrame(animId);
+      onEnd();
+    }
+
+    document.addEventListener('keydown', handleKey);
+    updateInfo();
+    animId = requestAnimationFrame(gameLoop);
+  }
+
   // ── Command dispatcher ───────────────────────────────────────────────────
   async function dispatch(rawInput) {
     const trimmed = rawInput.trim();
@@ -884,6 +1300,7 @@ Loaded. Ready. Let's go.`,
       case 'source':  await cmdSource(args); break;
       case 'clear':   cmdClear();          break;
       case 'matrix':  await cmdMatrix();   break;
+      case 'snake':    await cmdSnake();    break;
       case 'exit':
         await typewriteLine('There is no exit. Only Tars.', 'output-warn', 15);
         break;
