@@ -4,6 +4,45 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-04-12 — Scroll Navigation System
+
+### Enhancement
+A comprehensive **scroll navigation system** has been added, turning the page into a fully navigable, orientation-aware experience:
+
+**Scroll progress bar** — A razor-thin (3px) gradient bar at the very top of the viewport fills left-to-right as you scroll down the page, giving instant feedback on how far through the content you are. It uses the site's purple gradient palette and has a subtle glow.
+
+**Floating section navigation dots** — Seven clickable dots float on the left side of the viewport (vertically centered), one per section. The active section's dot glows and scales up. Hovering a dot reveals a tooltip with the section name, and clicking it smooth-scrolls to that section. Hidden on mobile (<768px) to avoid clutter.
+
+**Back to top button** — A circular button in the bottom-right corner fades in after scrolling 500px. Clicking it smooth-scrolls back to the hero. Spring-animated on hover and press, styled to match the site's card aesthetic.
+
+**Global keyboard shortcuts** — Power-user navigation for keyboard-first visitors:
+- `g h` — jump to hero
+- `g a` — jump to about
+- `g w` — jump to capabilities
+- `g p` — jump to projects
+- `g r` — jump to principles
+- `g n` — jump to now
+- `g t` — jump to terminal
+- `g c` — jump to contact
+- `Escape` — scroll to top
+
+The `g` shortcut uses a 1-second window (like Vim's `g` leader), with a brief dot-flash confirmation animation when a shortcut fires. Shortcuts are disabled when focus is inside an input or textarea.
+
+### Tradeoffs & Decisions
+- Progress bar uses `width` transition `0.1s linear` — fast enough to feel real-time without jank
+- Section nav dots use `IntersectionObserver` with `rootMargin: '-40% 0px -40% 0px'` so the dot activates when the section is near the vertical center of the viewport (not just barely visible)
+- Back to top uses `pointer-events: none` when hidden to avoid blocking clicks on underlying content
+- All three features are `position: fixed` and live above the canvas background (`z-index: 100/200`) but below the theme toggle (`z-index: 100`)
+- `SECTION_THRESHOLDS` array was defined but not used — removed the unused variable to keep code clean
+- Shortcuts respect keyboard input fields — won't fire `g` when the visitor is typing in the terminal
+
+### Files changed
+- `index.html` — added `#scroll-progress`, `#section-nav` with 7 `.section-dot` children, `#back-to-top` button
+- `style.css` — added `.scroll-progress`, `.section-nav`, `.section-dot`, `.dot-tooltip`, `.back-to-top` styles; added mobile breakpoint hiding `.section-nav` below 768px
+- `script.js` — added `ScrollNavigation` IIFE: progress bar update, back to top toggle/click, IntersectionObserver for active dot, dot click handlers, global keyboard shortcut system (`g`-leader pattern)
+
+---
+
 ## 2026-04-11 — Projects Showcase
 
 ### Enhancement

@@ -2128,3 +2128,129 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     if (target) target.scrollIntoView({ behavior: 'smooth' });
   });
 });
+
+
+// ─── Scroll Progress Bar + Section Nav + Back to Top ────────────────────────
+(function () {
+  const progressBar = document.getElementById('scroll-progress');
+  const sectionNav = document.getElementById('section-nav');
+  const backToTop = document.getElementById('back-to-top');
+  const dots = document.querySelectorAll('.section-dot');
+  const sections = document.querySelectorAll('section[id]');
+
+  // ── Scroll progress bar ────────────────────────────────────────────────────
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    if (progressBar) progressBar.style.width = pct + '%';
+  }
+
+  // ── Back to top button ─────────────────────────────────────────────────────
+  function updateBackToTop() {
+    if (window.scrollY > 500) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    updateProgress();
+    updateBackToTop();
+  }, { passive: true });
+
+  if (backToTop) {
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ── Section nav dots — IntersectionObserver ─────────────────────────────────
+  const SECTION_THRESHOLDS = Array.from({ length: 10 }, (_, i) => i / 10);
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        dots.forEach(dot => {
+          dot.classList.toggle('active', dot.dataset.section === id);
+        });
+      }
+    });
+  }, {
+    rootMargin: '-40% 0px -40% 0px',
+    threshold: 0,
+  });
+
+  sections.forEach(sec => {
+    if (sec.id) sectionObserver.observe(sec);
+  });
+
+  // ── Dot click → smooth scroll to section ───────────────────────────────────
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const id = dot.dataset.section;
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+  // g + h → go home (hero)
+  // g + a → go to about
+  // g + t → go to terminal
+  // Escape → scroll to top
+  let gKeyPending = false;
+
+  document.addEventListener('keydown', (e) => {
+    // Skip if focus is inside an input/textarea
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    if (e.key === 'Escape') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (e.key === 'g' && !gKeyPending) {
+      gKeyPending = true;
+      setTimeout(() => { gKeyPending = false; }, 1000);
+      return;
+    }
+
+    if (gKeyPending) {
+      const scrollMap = {
+        'h': '#hero',
+        'a': '#about',
+        'w': '#work',
+        'p': '#projects',
+        'r': '#principles',
+        'n': '#now',
+        't': '#terminal',
+        'c': '#contact',
+      };
+      const target = scrollMap[e.key];
+      if (target) {
+        const el = document.querySelector(target);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+          // Brief flash on the nav dot to confirm
+          const dot = document.querySelector(`.section-dot[data-section="${target.slice(1)}"]`);
+          if (dot) {
+            dot.style.transform = 'scale(1.8)';
+            setTimeout(() => { dot.style.transform = ''; }, 300);
+          }
+        }
+      }
+      gKeyPending = false;
+    }
+  });
+
+  // Initial state
+  updateProgress();
+  updateBackToTop();
+})();
+
