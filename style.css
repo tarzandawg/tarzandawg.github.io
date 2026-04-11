@@ -1443,6 +1443,117 @@ footer p { opacity: 0.6; }
   .clock-time { font-size: 0.95rem; }
 }
 
+/* ─── Custom Cursor + Comet Trail ───────────────────────────────────────────── */
+#cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 0.3s, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 0 0 0 rgba(108, 99, 255, 0.4),
+    0 0 12px 2px rgba(108, 99, 255, 0.6);
+  opacity: 0;
+  will-change: transform;
+  /* Hide on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    display: none;
+  }
+}
+
+#cursor-dot.active {
+  opacity: 1;
+}
+
+#cursor-dot.clicking {
+  transform: translate(-50%, -50%) scale(1.6);
+  box-shadow:
+    0 0 0 0 rgba(108, 99, 255, 0.4),
+    0 0 20px 4px rgba(108, 99, 255, 0.7);
+}
+
+/* Trail container — invisible until mouse moves */
+#cursor-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+}
+
+.trail-node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition:
+    opacity 0.5s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 6px 1px rgba(108, 99, 255, 0.5);
+  will-change: transform, opacity;
+  /* Hide on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    display: none;
+  }
+}
+
+/* Trail active state — applied by JS */
+#cursor-trail.active .trail-node {
+  opacity: 0.7;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Each trail node gets a staggered delay via nth-child */
+.trail-node:nth-child(1) { transition-delay: 0ms; }
+.trail-node:nth-child(2) { transition-delay: 40ms; width: 5px; height: 5px; }
+.trail-node:nth-child(3) { transition-delay: 80ms; width: 4px; height: 4px; }
+.trail-node:nth-child(4) { transition-delay: 120ms; width: 3px; height: 3px; }
+.trail-node:nth-child(5) { transition-delay: 160ms; width: 2px; height: 2px; }
+
+/* When cursor is clicking, trail dots shrink */
+#cursor-trail.clicking .trail-node {
+  transform: translate(-50%, -50%) scale(0.5);
+  opacity: 0.3;
+}
+
+/* Hide default cursor globally when custom cursor is active */
+body.cursor-active,
+body.cursor-active * {
+  cursor: none !important;
+}
+
+/* But show pointer on interactive elements that have their own opinions */
+body.cursor-active a,
+body.cursor-active button,
+body.cursor-active [role="button"],
+body.cursor-active input,
+body.cursor-active select,
+body.cursor-active textarea {
+  cursor: none !important;
+}
+
+/* Reduced motion: hide cursor + trail */
+@media (prefers-reduced-motion: reduce) {
+  #cursor-dot,
+  .trail-node {
+    display: none !important;
+  }
+}
+
 /* ─── Scroll Progress Bar ──────────────────────────────────────────────────── */
 #scroll-progress {
   position: fixed;

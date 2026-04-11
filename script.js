@@ -1,3 +1,166 @@
+// ─── Custom Cursor + Comet Trail ───────────────────────────────────────────────
+(function () {
+  // Respect reduced motion
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Touch devices get no cursor
+  if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return;
+
+  const cursorDot = document.getElementById('cursor-dot');
+  const trail = document.getElementById('cursor-trail');
+  const trailNodes = document.querySelectorAll('.trail-node');
+
+  if (!cursorDot || !trail || !trailNodes.length) return;
+
+  // State
+  let mouseX = -100, mouseY = -100;
+  let trailX = -100, trailY = -100;
+  let isVisible = false;
+  let isClicking = false;
+  let rafId = null;
+
+  // Trail nodes follow with spring physics
+  const TRAIL_SPRING = 0.12;  // How tightly trail follows (lower = longer trail)
+  const CURSOR_SPRING = 0.35; // Main dot follows more tightly
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function tick() {
+    // Main cursor follows mouse tightly
+    cursorDot.style.left = mouseX + 'px';
+    cursorDot.style.top = mouseY + 'px';
+
+    // Trail nodes spring toward the cursor with increasing delay per node
+    // Node 0 (closest) → follows main dot
+    // Node N → follows Node N-1
+    let prevX = mouseX;
+    let prevY = mouseY;
+    trailNodes.forEach((node, i) => {
+      const delay = (i + 1) * 0.08; // each node is slightly more sluggish
+      const x = lerp(prevX, trailX, delay);
+      const y = lerp(prevY, trailY, delay);
+      node.style.left = x + 'px';
+      node.style.top = y + 'px';
+      prevX = x;
+      prevY = y;
+    });
+
+    // Trail container target follows cursor with more lag
+    trailX = lerp(trailX, mouseX, TRAIL_SPRING);
+    trailY = lerp(trailY, mouseY, TRAIL_SPRING);
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function activate() {
+    if (!isVisible) {
+      isVisible = true;
+      document.body.classList.add('cursor-active');
+      cursorDot.classList.add('active');
+      trail.classList.add('active');
+      // Fade in trail nodes with stagger
+      trailNodes.forEach((node, i) => {
+        setTimeout(() => {
+          node.style.opacity = '0.7';
+          node.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, i * 35);
+      });
+      tick();
+    }
+  }
+
+  function deactivate() {
+    if (isVisible) {
+      isVisible = false;
+      document.body.classList.remove('cursor-active');
+      cursorDot.classList.remove('active');
+      trail.classList.remove('active');
+      cancelAnimationFrame(rafId);
+    }
+  }
+
+  // Show cursor on first mouse move, hide after 3s of inactivity
+  let hideTimeout = null;
+
+  function showCursor() {
+    clearTimeout(hideTimeout);
+    activate();
+    hideTimeout = setTimeout(() => {
+      if (!document.hidden) {
+        // Fade out cursor when idle
+        cursorDot.style.opacity = '0';
+        trail.style.opacity = '0';
+      }
+    }, 3000);
+  }
+
+  function onMouseMove(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Re-show if was hidden
+    if (isVisible) {
+      clearTimeout(hideTimeout);
+      cursorDot.style.opacity = '1';
+      trail.style.opacity = '1';
+      hideTimeout = setTimeout(() => {
+        if (!document.hidden) {
+          cursorDot.style.opacity = '0';
+          trail.style.opacity = '0';
+        }
+      }, 3000);
+    } else {
+      activate();
+    }
+  }
+
+  function onMouseLeave() {
+    clearTimeout(hideTimeout);
+    deactivate();
+  }
+
+  function onMouseDown() {
+    isClicking = true;
+    cursorDot.classList.add('clicking');
+    trail.classList.add('clicking');
+  }
+
+  function onMouseUp() {
+    isClicking = false;
+    cursorDot.classList.remove('clicking');
+    trail.classList.remove('clicking');
+  }
+
+  // Touch devices — ensure cursor never shows
+  if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+    return;
+  }
+
+  document.addEventListener('mousemove', onMouseMove, { passive: true });
+  document.addEventListener('mouseleave', onMouseLeave);
+  document.addEventListener('mouseenter', (e) => {
+    if (e.target === document.documentElement || e.target === document.body) {
+      showCursor();
+    }
+  });
+  document.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mouseup', onMouseUp);
+
+  // Tab visibility — hide cursor when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      clearTimeout(hideTimeout);
+      cursorDot.style.opacity = '0';
+      trail.style.opacity = '0';
+    }
+  });
+
+  // Expose showCursor so other parts can keep cursor alive during interactions
+  window._keepCursorAlive = showCursor;
+
+})();
+
 // ─── Hero Entrance + Particle Burst ──────────────────────────────────────────
 (function () {
   // Brief delay so the page paints first, then animate in

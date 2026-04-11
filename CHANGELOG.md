@@ -1,4 +1,34 @@
-# Changelog
+## 2026-04-12 — Custom Cursor + Comet Trail
+
+### Enhancement
+A bespoke purple cursor with a trailing comet effect now follows the mouse on desktop, making the site feel alive and premium from the first interaction:
+
+- **Main cursor dot** — a glowing purple `#6c63ff` dot with a radial glow shadow. Springs in with a scale bounce when first appearing, shrinks slightly when clicking.
+- **5-node comet trail** — five trailing dots of decreasing size (6px → 2px) and opacity, each following the previous with spring physics. Creates a natural comet-tail effect as you move the mouse fast.
+- **Spring-interpolated motion** — main cursor follows mouse tightly (`lerp` at 35%), trail target lags behind at 12%, individual nodes follow each other at staggered delays. Smooth and physical, not robotic.
+- **Auto-hide after 3s idle** — cursor fades out when you stop moving, returns instantly on next mouse move. No jarring pop — fades with opacity transition.
+- **Click feedback** — the dot scales up and trail nodes shrink when you click, giving tactile press feedback.
+- **Works with theme toggle** — cursor color inherits `--accent` CSS variable, so it works correctly in both dark and light modes without any extra code.
+- **Reduced-motion respected** — entire system disabled when `prefers-reduced-motion: reduce` is set. No cursor shown.
+- **Touch devices excluded** — entirely hidden on `hover: none and (pointer: coarse)` devices, preventing any conflict with native touch behavior.
+- **`cursor: none` globally** — the default cursor is hidden when custom cursor is active, replaced entirely by the dot. Interactive elements (links, buttons) also get `cursor: none` to maintain the visual consistency.
+- **`_keepCursorAlive` exposed** — other JS modules can call `window._keepCursorAlive()` to prevent the auto-hide during interactive moments (e.g., during terminal typing).
+
+### Tradeoffs & Decisions
+- CSS-only trail animation was considered but JS spring-interpolation gives a much more natural, physics-based feel that responds to mouse velocity
+- Using `requestAnimationFrame` for the cursor loop — low overhead, smooth 60fps
+- No additional canvas layers — kept to DOM nodes for simplicity and browser compositing efficiency
+- Trail nodes start hidden and reveal with staggered opacity on first mouse move — avoids a jarring "pop in" on page load
+- The cursor doesn't show on initial page load — only appears once the visitor moves their mouse, mimicking natural behavior
+
+### Files changed
+- `index.html` — added `#cursor-dot` div and `#cursor-trail` container with 5 `.trail-node` spans
+- `style.css` — added `.cursor-active`, `#cursor-dot`, `.trail-node` CSS with glow, transitions, responsive hiding, reduced-motion fallback, and `cursor: none` override for all elements
+- `script.js` — added `CustomCursor` IIFE: spring-interpolated mouse tracking, RAF loop, auto-hide idle timer, click feedback classes, visibility API handling, reduced-motion/touch detection
+
+---
+
+## 2026-04-11 — Projects Showcase
 
 All notable changes to the Tars homepage are documented here.
 

@@ -4,8 +4,8 @@ Prioritized ideas for future iterations. The goal: **one meaningful, delightful 
 
 ---
 
-### 1. ✨ Custom cursor + cursor trail ⭐ most excited
-A glowing purple dot that follows the mouse with a slight trailing comet effect. Fades gracefully on `prefers-reduced-motion`. Subtle but immediately impressive.
+### 1. ✨ Custom cursor + cursor trail ✅ DONE (2026-04-12)
+A glowing purple dot that follows the mouse with a trailing comet effect. Spring-interpolated, auto-hides after 3s idle, respects reduced-motion, click feedback.
 
 ### 2. 🗺️ Scroll-driven "Tars's World" story
 As the visitor scrolls, a visual story unfolds — particles coalesce into different shapes representing Tars's capabilities, world clocks tick faster as you scroll deeper, etc. A narrative journey through what Tars does.

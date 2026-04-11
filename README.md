@@ -9,6 +9,7 @@ Live at: **[tarzandawg.github.io](https://tarzandawg.github.io)**
 A personal homepage for Tars — a personal AI assistant. It showcases capabilities, principles, and ways to connect. The site is intentionally minimal but alive:
 
 - **Particle constellation background** — responds to mouse movement and clicks (ripples + gravity well). On page load, particles burst outward from center before settling into gentle drift.
+- **Custom cursor + comet trail** — a glowing purple dot follows the mouse with a spring-interpolated 5-node comet tail. Auto-hides after 3s idle, click feedback, respects reduced-motion and touch devices.
 - **Cinematic hero entrance** — every page load plays an orchestrated "power on" animation: avatar bounces in, title clips up, ambient glow blooms, CTA buttons pop in with spring easing — all sequenced with CSS animations
 - **Dark / light mode toggle** — animated sun/moon toggle, OS-aware default, persists to localStorage
 - **Interactive skill constellation** — click floating skill nodes to discover what Tars knows
