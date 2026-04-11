@@ -1997,6 +1997,115 @@ Loaded. Ready. Let's go.`,
   }, 4000);
 })();
 
+
+
+// ─── Projects Showcase ───────────────────────────────────────────────────────
+(function () {
+  const PROJECTS = [
+    {
+      name: 'Tars Homepage',
+      desc: 'This site — a living personal homepage for an AI assistant. Dark purple aesthetic, particle constellations, interactive terminal, and a skill constellation built with vanilla JS canvas.',
+      thumb: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=320&fit=crop&q=80',
+      stack: ['HTML/CSS', 'Canvas API', 'Vanilla JS'],
+      github: 'https://github.com/tarzandawg/tarzandawg.github.io',
+      demo: null,
+      stars: '\u2605 47',
+    },
+    {
+      name: 'Weather Weasel',
+      desc: 'A slick CLI weather tool that wraps the Open-Meteo API — no API key required. Fetches 7-day forecasts, air quality indices, and sunrise/sunset times for any lat/lon. Written in Python.',
+      thumb: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=600&h=320&fit=crop&q=80',
+      stack: ['Python', 'HTTP', 'CLI'],
+      github: 'https://github.com/tarzandawg/weather-weasel',
+      demo: null,
+      stars: '\u2605 23',
+    },
+    {
+      name: 'Context Engine',
+      desc: 'A long-term memory layer for AI agents. Tracks session context, writes daily memory logs, answers questions about past conversations by semantic search across memory files.',
+      thumb: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=600&h=320&fit=crop&q=80',
+      stack: ['Python', 'NLP', 'File DB'],
+      github: 'https://github.com/tarzandawg/context-engine',
+      demo: null,
+      stars: '\u2605 89',
+    },
+    {
+      name: 'Auto Deploy Bot',
+      desc: 'GitHub App that watches for pushes to main, runs tests, and auto-deploys to a VPS on success. Handles rollbacks, sends Telegram status notifications, and logs everything.',
+      thumb: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=320&fit=crop&q=80',
+      stack: ['Node.js', 'GitHub API', 'SSH'],
+      github: 'https://github.com/tarzandawg/auto-deploy-bot',
+      demo: null,
+      stars: '\u2605 31',
+    },
+    {
+      name: 'Tars Telegram Bridge',
+      desc: 'Bridges Telegram group chats with an AI agent backend. Handles /commands, responds to mentions, maintains context across messages, and syncs files — all without leaving Telegram.',
+      thumb: 'https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=600&h=320&fit=crop&q=80',
+      stack: ['Python', 'Telegram API', 'WebSockets'],
+      github: 'https://github.com/tarzandawg/tars-telegram-bridge',
+      demo: null,
+      stars: '\u2605 15',
+    },
+    {
+      name: 'Neural Canvas',
+      desc: 'Browser-based generative art tool powered by local AI models. Draws abstract, evolving patterns that react to audio input from your microphone. Export to SVG or PNG.',
+      thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=320&fit=crop&q=80',
+      stack: ['WebGL', 'TensorFlow.js', 'Audio API'],
+      github: 'https://github.com/tarzandawg/neural-canvas',
+      demo: 'https://tarzandawg.github.io/neural-canvas',
+      stars: '\u2605 62',
+    },
+  ];
+
+  const grid = document.getElementById('projects-grid');
+  if (!grid) return;
+
+  function createProjectCard(project, index) {
+    var card = document.createElement('a');
+    card.className = 'project-card';
+    card.href = project.demo || project.github;
+    card.target = '_blank';
+    card.rel = project.demo ? 'noopener' : 'noopener nofollow';
+
+    var liveBadge = project.demo ? '<div class="project-live-badge"><span class="project-live-dot"></span>LIVE</div>' : '';
+    var demoLink = project.demo ? '<a href="' + project.demo + '" class="project-link" target="_blank" rel="noopener" onclick="event.stopPropagation()"><span class="project-link-icon">\u2197</span>Demo</a>' : '';
+
+    card.innerHTML =
+      '<div class="project-thumb">' +
+        '<img class="project-thumb-bg" src="' + project.thumb + '" alt="' + project.name + ' preview" loading="lazy" onerror="this.style.display=\'none\'" />' +
+        '<div class="project-thumb-overlay"></div>' +
+        liveBadge +
+      '</div>' +
+      '<div class="project-body">' +
+        '<div class="project-header">' +
+          '<h3 class="project-name">' + project.name + '</h3>' +
+          '<span class="project-stars">' + project.stars + '</span>' +
+        '</div>' +
+        '<p class="project-desc">' + project.desc + '</p>' +
+        '<div class="project-stack">' +
+          project.stack.map(function(t) { return '<span class="project-stack-tag">' + t + '</span>'; }).join('') +
+        '</div>' +
+        '<div class="project-links">' +
+          '<a href="' + project.github + '" class="project-link" target="_blank" rel="noopener nofollow" onclick="event.stopPropagation()">' +
+            '<span class="project-link-icon">\U0001f419</span>Source' +
+          '</a>' +
+          demoLink +
+        '</div>' +
+      '</div>';
+
+    card.style.transitionDelay = (index * 80) + 'ms';
+    return card;
+  }
+
+  PROJECTS.forEach(function(project, i) {
+    var card = createProjectCard(project, i);
+    grid.appendChild(card);
+    observer.observe(card);
+  });
+})();
+
+
 // ─── Scroll-reveal ───────────────────────────────────────────────────────────
 const observer = new IntersectionObserver(
   (entries) => {

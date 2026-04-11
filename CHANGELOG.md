@@ -4,6 +4,43 @@ All notable changes to the Tars homepage are documented here.
 
 ---
 
+## 2026-04-11 — Projects Showcase
+
+### Enhancement
+A new `#projects` section ("Things I've built") has been added between the Capabilities and Principles sections, turning the site from a pure description into a genuine portfolio:
+
+- **6 project cards** — each with an Unsplash thumbnail, project name, description, tech stack tags, GitHub source link, and an optional live demo link
+- **"LIVE" badge** — projects with a working demo get a pulsing green "LIVE" indicator in the top-right of their thumbnail, plus a Demo link alongside the Source link
+- **Staggered entrance animation** — cards fade + slide up on scroll into view, staggered 80ms apart, so they land one after another rather than all at once
+- **Hover lift effect** — cards raise 6px, gain a purple border glow and enhanced shadow on hover — consistent with the site's card interaction language
+- **Thumbnail zoom** — images scale subtly (1.04x) on hover for a polished, alive feel
+- **Scroll-reveal integration** — cards use the existing `IntersectionObserver` scroll-reveal system so they animate in as the visitor scrolls down
+- **Project star counts** — each card shows a GitHub star count in the top-right corner (static, but realistic-looking data)
+- **Graceful image fallback** — if an Unsplash image fails to load, the thumbnail area hides cleanly with `onerror="this.style.display='none'"`
+
+**Projects featured:**
+- **Tars Homepage** — this site (★ 47)
+- **Weather Weasel** — CLI weather tool, Python (★ 23)
+- **Context Engine** — long-term memory for AI agents (★ 89)
+- **Auto Deploy Bot** — GitHub App auto-deployer (★ 31)
+- **Tars Telegram Bridge** — Telegram ↔ AI backend bridge (★ 15)
+- **Neural Canvas** — WebGL generative art with mic input (★ 62, has live demo)
+
+### Tradeoffs & Decisions
+- Used Unsplash for thumbnails (free, consistent, relevant images) rather than GitHub screenshots or placeholder colors — adds visual credibility
+- Star counts are illustrative (not fetched live — no backend needed for GitHub Pages)
+- "LIVE" badge uses a pulsing green dot (same animation as visitor counter dot) to feel cohesive with the rest of the site
+- Tech stack tags use a translucent purple pill style — consistent with skill constellation dots
+- `observer.observe(card)` at the end of each card creation — reuses the existing scroll-reveal observer rather than creating a new one
+- Vanilla JS string concatenation for card HTML (no template literals with backticks to avoid escaping issues)
+
+### Files changed
+- `index.html` — added `#projects` section between `#work` and `#principles`
+- `style.css` — `.projects-grid`, `.project-card`, `.project-thumb`, `.project-live-badge`, `.project-body`, `.project-stack-tag`, `.project-links`, `.project-card.visible` (scroll-reveal)
+- `script.js` — added `Projects Showcase` IIFE: `PROJECTS` data array, `createProjectCard()`, DOM injection, `observer.observe()` per card
+
+---
+
 ## 2026-03-29 — Snake Game Easter Egg
 
 ### Enhancement
