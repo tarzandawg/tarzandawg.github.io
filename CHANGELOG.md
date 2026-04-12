@@ -1,3 +1,29 @@
+## 2026-04-13 — Hero Mouse Parallax
+
+### Enhancement
+The hero section now responds to mouse movement with a subtle depth-layered parallax effect, making it feel three-dimensional and alive:
+
+- **7 independent depth layers** — ambient glow, avatar, title, tagline, activity ticker, CTA buttons, and scroll hint — each moving at a different speed relative to the mouse
+- **Smooth lerp interpolation** — the parallax uses `requestAnimationFrame` with a lerp factor of 0.08, giving silky-smooth motion that feels physical rather than mechanical
+- **Staggered depth intensities** — the avatar moves the most (7% of mouse offset), title at 5%, glow at 4%, tagline at 2.5%, buttons at 2%, scroll hint at 1%. Creates convincing depth hierarchy
+- **Glow follows cursor** — the ambient radial glow behind the avatar uses CSS custom properties (`--parallax-x`, `--parallax-y`) updated each frame for zero-jank motion
+- **Respects reduced motion** — entire system disabled when `prefers-reduced-motion: reduce` is set
+- **Deferred activation** — parallax activates 2.5s after page load, after the hero entrance animation completes, to avoid any conflict between the entrance keyframes and the parallax transforms
+- **CSS-only transitions after init** — once `.parallax-active` class is added, CSS `transition: transform 0.1s linear` handles updates smoothly without re-applying the same transform every frame from JS
+
+### Tradeoffs & Decisions
+- Parallax applied as additive `translate()` on top of existing entrance animations, not replacing them — the avatar's float animation (`translateY`) and parallax (`translateX/Y`) coexist without conflict
+- Glow parallax done via CSS custom properties (`--parallax-x/y`) set by JS, rather than inline transform, to avoid overriding the existing `translateX(-50%)` centering transform on `::before`
+- Mouse tracking uses `{ passive: true }` on the mousemove listener for zero scroll jank
+- Deferring to 2.5s (after the 2.4s entrance animation) ensures the entrance plays cleanly without parallax interference
+- On touch devices, parallax is inactive (hover-based feature anyway)
+
+### Files changed
+- `script.js` — added `HeroParallax` IIFE: mouse tracking, RAF loop with lerp interpolation, `applyParallax()` updating element transforms and CSS variables, deferred `.parallax-active` class activation
+- `style.css` — updated `.hero::before` to use `translate(calc(-50% + var(--parallax-x, 0px)), var(--parallax-y, 0px))` for glow parallax; added `.hero.parallax-active .<element>` CSS rules with `transition` and `will-change` for smooth layer movement
+
+---
+
 ## 2026-04-12 — Custom Cursor + Comet Trail
 
 ### Enhancement

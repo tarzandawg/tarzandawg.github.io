@@ -269,12 +269,13 @@ canvas,
   position: absolute;
   top: -50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translate(var(--parallax-x, 0px), var(--parallax-y, 0px));
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
   pointer-events: none;
   animation: pulse 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes pulse {
@@ -477,6 +478,37 @@ canvas,
 
 .hero-animate .scroll-hint {
   animation: fadeInBounce 0.8s ease 1.5s forwards, bounce 2s ease-in-out 2.3s infinite;
+}
+
+/* ─── Hero Parallax (activated after entrance animation) ──────────────────── */
+.hero.parallax-active .avatar {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.hero.parallax-active .hero h1 {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.hero.parallax-active .tagline {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.hero.parallax-active .activity-ticker {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.hero.parallax-active .cta-row {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.hero.parallax-active .scroll-hint {
+  transition: transform 0.1s linear;
+  will-change: transform;
 }
 
 @keyframes fadeInBounce {

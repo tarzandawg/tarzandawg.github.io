@@ -1,4 +1,101 @@
-// ─── Custom Cursor + Comet Trail ───────────────────────────────────────────────
+// ─── Hero Mouse Parallax ────────────────────────────────────────────────────────
+(function () {
+  const hero = document.querySelector('.hero');
+  if (!hero) return;
+
+  // Respect reduced motion
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const layers = [
+    { selector: '.hero::before', depth: 0.04 },   // ambient glow — slowest
+    { selector: '.avatar',        depth: 0.07 },   // avatar — slow
+    { selector: '.hero h1',       depth: 0.05 },   // title — very slow
+    { selector: '.tagline',       depth: 0.025 },  // tagline — subtle
+    { selector: '.activity-ticker',depth: 0.015 }, // ticker — barely perceptible
+    { selector: '.cta-row',       depth: 0.02 },   // buttons — subtle
+    { selector: '.scroll-hint',   depth: 0.01 },  // scroll hint — almost static
+  ];
+
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+  let rafId = null;
+  let isActive = false;
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function applyParallax() {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = targetX - cx;
+    const dy = targetY - cy;
+
+    // Avatar
+    const avatar = document.querySelector('.avatar');
+    if (avatar) {
+      avatar.style.transform = `translate(${dx * 0.07}px, ${dy * 0.07}px)`;
+    }
+
+    // Title
+    const title = document.querySelector('.hero h1');
+    if (title) {
+      title.style.transform = `translate(${dx * 0.05}px, ${dy * 0.05}px)`;
+    }
+
+    // Tagline
+    const tagline = document.querySelector('.tagline');
+    if (tagline) {
+      tagline.style.transform = `translate(${dx * 0.025}px, ${dy * 0.025}px)`;
+    }
+
+    // Activity ticker
+    const ticker = document.querySelector('.activity-ticker');
+    if (ticker) {
+      ticker.style.transform = `translate(${dx * 0.015}px, ${dy * 0.015}px)`;
+    }
+
+    // CTA row
+    const cta = document.querySelector('.cta-row');
+    if (cta) {
+      cta.style.transform = `translate(${dx * 0.02}px, ${dy * 0.02}px)`;
+    }
+
+    // Scroll hint
+    const hint = document.querySelector('.scroll-hint');
+    if (hint) {
+      hint.style.transform = `translateX(calc(-50% + ${dx * 0.01}px))`;
+    }
+
+    // Hero glow (via CSS variable)
+    hero.style.setProperty('--parallax-x', `${dx * 0.04}px`);
+    hero.style.setProperty('--parallax-y', `${dy * 0.04}px`);
+  }
+
+  function onMouseMove(e) {
+    targetX = e.clientX;
+    targetY = e.clientY;
+    if (!isActive) {
+      isActive = true;
+      tick();
+    }
+  }
+
+  function tick() {
+    currentX = lerp(currentX, targetX, 0.08);
+    currentY = lerp(currentY, targetY, 0.08);
+    applyParallax();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  hero.addEventListener('mousemove', onMouseMove, { passive: true });
+
+  // Activate parallax only after the hero entrance animation completes (~2.4s)
+  // to avoid conflicting with the entrance keyframes
+  setTimeout(() => {
+    hero.classList.add('parallax-active');
+  }, 2500);
+})();
+
+// ─── Custom Cursor + Comet Trail ────────────────────────────────────────────────
 (function () {
   // Respect reduced motion
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
