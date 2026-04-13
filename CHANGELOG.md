@@ -1,3 +1,34 @@
+## 2026-04-15 — Command Palette (`Cmd+K`)
+
+### Enhancement
+A **Linear/Notion-style command palette** has been added — press `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) from anywhere on the page to instantly access all of Tars's features:
+
+- **16 commands** organized into 3 categories: Navigate (9 section jumps), Actions (theme toggle, scroll-to-top), Terminal secrets (snake, matrix, whoami, ls, cat manifesto)
+- **Instant fuzzy search** — type to filter commands by name or description, empty state with clear message when nothing matches
+- **Arrow key navigation** — `↑↓` to move through results, `Enter` to execute, `Escape` to close
+- **Keyboard shortcut hints** — navigation commands show their `G+H` etc. keybindings in monospace kbd badges, matching the existing shortcut system
+- **Terminal integration** — "snake", "matrix", "whoami", "ls", and "cat manifesto" commands in the palette automatically scroll to the terminal section, wait for it to render, focus the input, populate the command, and fire it — giving a one-action journey from any page location to any terminal command
+- **Spring animation** — the palette scales in from 0.96 with a spring overshoot (`cubic-bezier(0.34, 1.56, 0.64, 1)`) on open, creating a satisfying tactile feel
+- **Blurred backdrop** — clicking the darkened overlay closes the palette (no need to reach for Escape)
+- **Body scroll lock** — when the palette is open, the page body scroll is locked so the overlay doesn't fight with page scrolling
+- **Fully accessible** — `role="dialog"`, `aria-modal="true"`, `aria-label`, `aria-hidden` on overlay, focus stays inside the palette, mouse-down prevents focus loss on click
+- **Mobile responsive** — on mobile the palette goes full-screen edge-to-edge with no border radius, making it easy to use on small touch screens
+- **Universal trigger** — works from any section of the page, whether you're at the top or buried in a blog post
+
+### Tradeoffs & Decisions
+- Palette opens centered at 12vh from top on desktop — high enough to feel prominent without blocking the hero entirely
+- Navigation commands duplicate the `g+h` etc. shortcuts (now discoverable through the palette) — deliberate redundancy: power users use shortcuts, everyone else discovers them here
+- Terminal commands in the palette (`snake`, `matrix`) show the typed command in the palette name itself, so there's no ambiguity about what will happen when you click
+- Shortcut badges use the `JetBrains Mono` font already loaded for the terminal — consistent aesthetic
+- Palette uses `pointer-events: none` on the overlay layer and `pointer-events: auto` on the palette itself to prevent accidental clicks on page elements underneath
+
+### Files changed
+- `index.html` — added `#cmd-overlay` + `#cmd-palette` markup (search input, results container, footer hints) before `</body>`
+- `style.css` — added all `.cmd-*` styles: overlay backdrop + blur, palette spring animation, header/input/footer, grouped results, item rows with icon/name/desc/arrow/shortcut, empty state, mobile full-screen breakpoint
+- `script.js` — added `CommandPalette` IIFE: `COMMANDS` data (3 groups × 16 items), `render()` with filtering, `updateSelection()` for keyboard nav, `open()`/`close()` with body scroll lock, `Cmd+K`/`Ctrl+K` listener, `ArrowUp`/`ArrowDown`/`Enter`/`Escape` handlers, backdrop click-to-close, terminal integration (`termCmd()` helper that pre-fills and fires terminal commands)
+
+---
+
 ## 2026-04-14 — Blog / Posts Section
 
 ### Enhancement

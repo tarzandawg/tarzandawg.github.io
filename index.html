@@ -377,6 +377,27 @@
   </div>
 </footer>
 
+<!-- Command Palette -->
+<div id="cmd-overlay" aria-hidden="true">
+  <div id="cmd-palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="cmd-header">
+      <svg class="cmd-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="cmd-input" type="text" placeholder="Search commands…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Search commands" />
+      <kbd class="cmd-esc-hint">ESC</kbd>
+    </div>
+    <div id="cmd-body">
+      <div id="cmd-results"></div>
+    </div>
+    <div class="cmd-footer">
+      <span class="cmd-footer-hint"><kbd>↑↓</kbd> navigate</span>
+      <span class="cmd-footer-hint"><kbd>↵</kbd> select</span>
+      <span class="cmd-footer-hint"><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>

@@ -2709,3 +2709,236 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   updateBackToTop();
 })();
 
+// ─── Command Palette ──────────────────────────────────────────────────────────
+(function () {
+  const overlay  = document.getElementById('cmd-overlay');
+  const palette  = document.getElementById('cmd-palette');
+  const input   = document.getElementById('cmd-input');
+  const results = document.getElementById('cmd-results');
+
+  if (!overlay || !input || !results) return;
+
+  let isOpen     = false;
+  let selected   = 0;
+  let allItems   = [];   // flat list of { el, cmd }
+  let currentQuery = '';
+
+  // ── Command definitions ──────────────────────────────────────────────────
+  const COMMANDS = [
+    // Navigation
+    {
+      group: 'Navigate',
+      items: [
+        { icon: '🏠', name: 'Go to Hero',          desc: 'Top of the page',      shortcut: ['G', 'H'], action: () => scrollTo('#hero') },
+        { icon: '👤', name: 'Go to About',          desc: 'Who am I',             shortcut: ['G', 'A'], action: () => scrollTo('#about') },
+        { icon: '⚡', name: 'Go to Capabilities',  desc: 'What I do',            shortcut: ['G', 'W'], action: () => scrollTo('#work') },
+        { icon: '🚀', name: 'Go to Projects',      desc: 'Things I\'ve built',   shortcut: ['G', 'P'], action: () => scrollTo('#projects') },
+        { icon: '💎', name: 'Go to Principles',    desc: 'How I work',           shortcut: ['G', 'R'], action: () => scrollTo('#principles') },
+        { icon: '🌍', name: 'Go to Now',           desc: 'Live status dashboard', shortcut: ['G', 'N'], action: () => scrollTo('#now') },
+        { icon: '📝', name: 'Go to Blog',          desc: 'Recent thoughts',      shortcut: ['G', 'B'], action: () => scrollTo('#blog') },
+        { icon: '💻', name: 'Go to Terminal',      desc: 'Interactive terminal',  shortcut: ['G', 'T'], action: () => scrollTo('#terminal') },
+        { icon: '✉',  name: 'Go to Contact',      desc: 'Find me around the web',shortcut: ['G', 'C'], action: () => scrollTo('#contact') },
+      ]
+    },
+    // Actions
+    {
+      group: 'Actions',
+      items: [
+        { icon: '🌓', name: 'Toggle theme',       desc: 'Switch between dark and light mode', shortcut: null, action: toggleTheme },
+        { icon: '⬆',  name: 'Scroll to top',     desc: 'Jump back to the hero',               shortcut: null, action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+      ]
+    },
+    // Terminal secrets
+    {
+      group: 'Terminal secrets',
+      items: [
+        { icon: '🐍', name: 'snake',              desc: 'Play Snake in the terminal',  shortcut: null, action: () => { scrollTo('#terminal'); setTimeout(() => { const inp = document.getElementById('terminal-input'); if (inp) { inp.focus(); inp.value = 'snake'; inp.dispatchEvent(new Event('input')); } }, 400); } },
+        { icon: '💊', name: 'matrix',             desc: 'Matrix easter egg',            shortcut: null, action: () => { scrollTo('#terminal'); setTimeout(() => { const inp = document.getElementById('terminal-input'); if (inp) { inp.focus(); inp.value = 'matrix'; inp.dispatchEvent(new Event('input')); } }, 400); } },
+        { icon: '📋', name: 'whoami',             desc: 'Print identity',              shortcut: null, action: () => termCmd('whoami') },
+        { icon: '📂', name: 'ls',                 desc: 'List virtual files',          shortcut: null, action: () => termCmd('ls') },
+        { icon: '📄', name: 'cat manifesto.txt',  desc: 'Read the manifesto',          shortcut: null, action: () => termCmd('cat manifesto.txt') },
+      ]
+    }
+  ];
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function scrollTo(selector) {
+    close();
+    setTimeout(() => {
+      const el = document.querySelector(selector);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 80);
+  }
+
+  function toggleTheme() {
+    close();
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.click();
+  }
+
+  function termCmd(cmd) {
+    close();
+    setTimeout(() => {
+      scrollTo('#terminal');
+      setTimeout(() => {
+        const inp = document.getElementById('terminal-input');
+        if (inp) { inp.focus(); inp.value = cmd; inp.dispatchEvent(new Event('input')); }
+      }, 400);
+    }, 80);
+  }
+
+  // ── Rendering ────────────────────────────────────────────────────────────
+  function render(query) {
+    results.innerHTML = '';
+    allItems = [];
+
+    const q = query.toLowerCase().trim();
+    let hasResults = false;
+
+    COMMANDS.forEach(group => {
+      const matching = group.items.filter(item =>
+        !q || item.name.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)
+      );
+      if (!matching.length) return;
+
+      hasResults = true;
+      const groupEl = document.createElement('div');
+      groupEl.className = 'cmd-group';
+
+      const label = document.createElement('div');
+      label.className = 'cmd-group-label';
+      label.textContent = group.group;
+      groupEl.appendChild(label);
+
+      matching.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cmd-item';
+        itemEl.setAttribute('role', 'button');
+        itemEl.setAttribute('tabindex', '-1');
+
+        const shortcutHTML = item.shortcut
+          ? '<div class="cmd-item-shortcut">' + item.shortcut.map(k => '<kbd>' + k + '</kbd>').join('') + '</div>'
+          : '<div class="cmd-item-shortcut"></div>';
+
+        itemEl.innerHTML =
+          '<div class="cmd-item-icon">' + item.icon + '</div>' +
+          '<div class="cmd-item-body">' +
+            '<div class="cmd-item-name">' + item.name + '</div>' +
+            '<div class="cmd-item-desc">' + item.desc + '</div>' +
+          '</div>' +
+          '<div class="cmd-item-arrow">→</div>' +
+          shortcutHTML;
+
+        itemEl.addEventListener('mousedown', function (e) {
+          e.preventDefault(); // prevent blur
+        });
+        itemEl.addEventListener('click', function () {
+          execute(item);
+        });
+
+        groupEl.appendChild(itemEl);
+        allItems.push({ el: itemEl, cmd: item });
+      });
+
+      results.appendChild(groupEl);
+    });
+
+    if (!hasResults) {
+      results.innerHTML =
+        '<div class="cmd-empty">' +
+          '<div class="cmd-empty-icon">🔍</div>' +
+          '<div>No commands match <strong>"' + query + '"</strong></div>' +
+        '</div>';
+    }
+
+    selected = 0;
+    updateSelection();
+  }
+
+  function updateSelection() {
+    allItems.forEach((item, i) => {
+      item.el.classList.toggle('selected', i === selected);
+      if (i === selected) {
+        item.el.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+
+  function execute(item) {
+    if (item && item.action) {
+      item.action();
+    }
+  }
+
+  // ── Open / close ─────────────────────────────────────────────────────────
+  function open() {
+    if (isOpen) return;
+    isOpen = true;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    currentQuery = '';
+    render('');
+    // Move focus into palette
+    setTimeout(() => input.focus(), 50);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    if (!isOpen) return;
+    isOpen = false;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // ── Keyboard shortcut: Cmd+K / Ctrl+K ──────────────────────────────────
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      isOpen ? close() : open();
+      return;
+    }
+
+    if (!isOpen) return;
+
+    if (e.key === 'Escape') {
+      close();
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selected = Math.min(selected + 1, allItems.length - 1);
+      updateSelection();
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selected = Math.max(selected - 1, 0);
+      updateSelection();
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (allItems[selected]) {
+        execute(allItems[selected].cmd);
+      }
+      return;
+    }
+  });
+
+  // ── Input handler ────────────────────────────────────────────────────────
+  input.addEventListener('input', function () {
+    currentQuery = input.value;
+    render(currentQuery);
+  });
+
+  // ── Click backdrop to close ──────────────────────────────────────────────
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) close();
+  });
+})();
+

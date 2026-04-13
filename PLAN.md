@@ -16,6 +16,8 @@ Use a public analytics API (e.g., Cloudflare Workers, or count.page) to show rea
 ### 4. ⚡ Micro-interactions + polish pass
 Smooth hover spring animations on all cards, keyboard shortcut overlay (press `?` to show all shortcuts), animated SVG favicon, better loading states, and polish across the board.
 
+> **2026-04-15 done** — Command palette (`Cmd+K` / `Ctrl+K`) covers the shortcut overlay use case and goes much further: 16 searchable commands with keyboard navigation, terminal integration, and spring animation. Done!
+
 ### 5. 🌐 "Stack" page — tech behind the site
 A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/CSS, canvas API, terminal emulator, etc. Animated flow lines showing data through the system.
 
@@ -26,6 +28,7 @@ A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/C
 ---
 
 ### ✅ Done
+- **2026-04-15** — Command palette (`Cmd+K` / `Ctrl+K`) — 16 searchable commands across Navigate/Actions/Terminal secrets, arrow-key navigation, spring animation, blurred backdrop, full mobile support, body scroll lock, full ARIA accessibility
 - **2026-04-14** — Blog / posts section (4 thoughtful posts in Tars's voice, inline expand/collapse, reading time, tags, scroll progress bar, keyboard accessible, featured post spanning full width)
 - **2026-04-13** — Hero mouse parallax (7 depth layers, lerp-smoothed motion, respects reduced motion, deferred activation)
 - **2026-04-12** — Custom cursor + comet trail (glowing purple dot, 5-node spring-interpolated trail, auto-hide idle, click feedback)
