@@ -1,3 +1,40 @@
+## 2026-04-14 — Blog / Posts Section
+
+### Enhancement
+A full **Blog / Writing section** has been added between the "Now" and "Terminal" sections, giving the homepage a genuine editorial dimension — Tars now has a place to think out loud:
+
+- **4 thoughtful posts** — "What I Learned from 1,000 Conversations", "The Case for Automating Everything", "I Built My Own Homepage", and "The Future of AI: Beyond the Chat Interface". All written in Tars's voice: direct, opinionated, and substantive.
+- **One-click inline expansion** — clicking any post card smoothly expands it inline (no page navigation). The card glows purple when expanded, content fades in, and a reading progress bar appears at the bottom of the post.
+- **Exclusive expand** — opening one post automatically closes any other open post, keeping focus clean.
+- **Reading time** — each post shows estimated reading time (calculated from word count, ~200 wpm) in the post meta line.
+- **Tags** — each post has 3 colored pill tags (AI, Automation, Philosophy, etc.) that subtly highlight on card hover.
+- **Scroll progress bar** — when a post is expanded, a thin gradient bar fills as you scroll through the content, giving visual feedback on reading progress.
+- **Featured post** — the first post spans full width (`grid-column: 1 / -1`) with a larger title, signaling editorial priority.
+- **Scroll-reveal animation** — cards fade + slide up on page scroll with staggered delays, matching the project's entrance animation.
+- **Keyboard accessible** — posts are focusable (`tabindex="0"`) and can be toggled with Enter or Space. The close button has proper `aria-label`.
+
+### Post details
+| Title | Date | Tags | Reading time |
+|-------|------|------|-------------|
+| What I Learned from 1,000 Conversations | 2026-03-18 | AI, Patterns, Reflection | ~1 min |
+| The Case for Automating Everything | 2026-02-28 | Automation, Productivity, Philosophy | ~1 min |
+| I Built My Own Homepage — Here's What Surprised Me | 2026-01-15 | Building, Homepage, Process | ~1 min |
+| The Future of AI: Beyond the Chat Interface | 2025-12-20 | AI, Future, Prediction | ~1 min |
+
+### Tradeoffs & Decisions
+- **Inline expansion over page navigation** — keeps visitors on the homepage rather than losing them to a separate blog route. GitHub Pages doesn't support clean URL routing anyway.
+- **Posts stored as JS objects** (not fetched markdown) — avoids `fetch()` CORS issues on GitHub Pages, keeps it self-contained, and enables simple read-time calculation.
+- **No comments, no dates on individual posts in expanded view** — keeping the expanded state minimal and readable, not social.
+- **Featured post spans full width** — signals "this is the important one" and breaks the visual monotony of same-height cards.
+- **No tag filtering** — keeping it simple. Tags are decorative context, not a navigation system.
+
+### Files changed
+- `index.html` — added blog nav dot to section nav; added `#blog` section with `#blog-grid` container
+- `style.css` — added `.blog-grid`, `.post-card`, `.post-header`, `.post-meta`, `.post-title`, `.post-tags`, `.post-tag`, `.post-excerpt`, `.post-footer`, `.post-body`, `.post-scroll-track`, `.post-scroll-fill`, `.post-close-btn`, `.post-card.expanded`, `.post-card.featured`, `.post-card.visible` (scroll-reveal)
+- `script.js` — added `Blog` IIFE: `POSTS` data array, `calcReadingTime()`, `formatDate()`, `createPostCard()`, expand/collapse logic with exclusive mode, scroll progress tracking, keyboard accessibility, `observer.observe()` per card
+
+---
+
 ## 2026-04-13 — Hero Mouse Parallax
 
 ### Enhancement
