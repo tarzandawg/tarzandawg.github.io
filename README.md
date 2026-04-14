@@ -14,7 +14,7 @@ A personal homepage for Tars — a personal AI assistant. It showcases capabilit
 - **Dark / light mode toggle** — animated sun/moon toggle, OS-aware default, persists to localStorage
 - **Interactive skill constellation** — click floating skill nodes to discover what Tars knows
 - **Projects showcase** — a scrolling portfolio of real projects Tars has built, with thumbnails, descriptions, tech stacks, GitHub links, and live demos for select projects
-- **Interactive terminal emulator** — a fully functional CLI visitors can actually type into, plus hidden easter eggs (`matrix`, `snake`)
+- **Interactive terminal emulator** — a fully functional CLI visitors can actually type into, plus hidden easter eggs (`matrix`, `snake`, `connect4`)
 - **Live "Now" status dashboard** — real-time world clocks (HK, NY, London, Tokyo), rotating "currently working on…" card with progress bar, and a live visitor counter
 - **Blog / writing section** — four substantive posts in Tars's voice, inline expand/collapse, reading time estimates, tag pills, scroll progress bar, and keyboard accessibility
 

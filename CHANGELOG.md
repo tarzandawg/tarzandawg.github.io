@@ -1,3 +1,72 @@
+## 2026-04-15 — Keyboard Shortcuts Overlay (`?`)
+
+### Enhancement
+A **keyboard shortcut cheat-sheet overlay** has been added — press `?` from anywhere on the page to instantly see every available shortcut at a glance:
+
+- **16 shortcuts** organized into 3 sections: **Navigation** (9 g-leader shortcuts + Escape to scroll to top), **Global** (⌘K for command palette + theme toggle button), and **Terminal** (↑↓ history, Tab completion, Ctrl+L clear)
+- **2-column layout** on desktop — Navigation on the left, Global + Terminal + Terminal Games on the right. Clean and scannable.
+- **Spring scale-in animation** — the panel pops in from `scale(0.94)` with a spring overshoot (`cubic-bezier(0.34, 1.56, 0.64, 1)`), matching the command palette's tactile feel
+- **Blurred backdrop** — clicking the darkened overlay closes the overlay (no need to reach for Escape)
+- **Body scroll lock** — when the overlay is open, page scroll is locked so it doesn't fight with the overlay
+- **Accessible** — `role="dialog"`, `aria-modal="true"`, `aria-hidden` on overlay, focus trapped on close button, `aria-label` on close button
+- **Mobile sheet** — on mobile (≤560px), the panel slides up from the bottom as a full-width sheet, edge-to-edge
+- **Universal trigger** — `?` works from any section, even mid-scroll. Escape also closes it
+- **Documents the theme toggle button** — the theme toggle is now discoverable from the shortcuts overlay under the Global section, where the command palette previously was the only way to know about it
+
+### Tradeoffs & Decisions
+- Using `e.key === '?'` (not `e.shiftKey && e.key === '/'`) to fire only on the US keyboard `?` key — avoids triggering on non-US keyboards where `?` is shift+`/`
+- The overlay does NOT document the `g`+`letter` sequence as two separate keystrokes shown side-by-side (`<kbd>g</kbd><kbd>h</kbd>`) to clearly communicate the Vim-style chord pattern — two key badges next to each other communicates "press g first, then h"
+- Terminal games (snake, matrix) are shown with `↗ terminal` hint rather than a keyboard shortcut, because they're command-based — the shortcut is knowing to type `snake` in the terminal
+- The close button focuses on open so keyboard users land immediately in a dismiss action
+- Escape closes the overlay without scrolling to top (Escape is handled by both the shortcuts overlay and the global nav shortcut system, but only one fires — `if (isOpen) { e.preventDefault(); close(); return; }` ensures the overlay takes priority)
+
+### Files changed
+- `index.html` — added `#shortcuts-overlay` + `#shortcuts-panel` markup: header with close button, two-column body with grouped shortcut rows, footer with close hint
+- `style.css` — added `.shortcuts-*` styles: fixed overlay with backdrop blur, panel spring animation, header/body/footer layout, `.shortcut-row`, `.shortcut-keys kbd`, mobile sheet breakpoint at 560px
+- `script.js` — added `ShortcutsOverlay` IIFE: `open()`/`close()` with body scroll lock, backdrop click-to-close, `?` key listener (US-keyboard safe), Escape priority handling over global nav shortcut
+
+---
+
+## 2026-04-15 — Connect Four (Terminal Secret Arcade)
+
+### Enhancement
+A fully playable **Connect Four** game has been added to the terminal's secret arcade, extending the interactive game collection beyond Snake:
+
+- **Type `connect4` in the terminal** to launch — a canvas game renders directly inside the terminal window, replacing the input row while playing
+- **Smooth drop animation** — pieces fall from the top with an ease-out cubic curve, creating a satisfying physics feel
+- **Smart AI opponent** — uses minimax with alpha-beta pruning (depth 6-8 depending on board state) — plays competitively but beatable
+- **AI randomness** — picks randomly among near-best moves to feel less robotic, not a perfect unbeatable machine
+- **Column hover preview** — hovering a column shows a ghosted red piece at the drop position, so you always know where you're aiming
+- **Column arrow indicators** — animated down-arrows in the header row highlight which column is hovered (and dims non-playable columns)
+- **Win detection + glow** — when someone wins, the four winning pieces glow with a radial halo; game-over message shown in the info bar
+- **Draw detection** — board-full without a winner triggers a draw state
+- **Rematch (R)** — press R to instantly restart without quitting
+- **Dual input** — click/tap columns OR press 1-7 on keyboard to drop pieces
+- **Keyboard controls** — 1-7 to drop in column, R to rematch, Q/Escape to quit back to terminal
+- **Debounced clicks** — double-click protection prevents accidental double-drops
+- **Purple-tinted aesthetic** — matches the site's palette; red pieces for human, yellow for AI; subtle gradient shading on pieces
+
+### How to play
+1. Type `connect4` in the terminal (or find it in the command palette)
+2. You are **Red** — click any column or press 1-7 to drop a piece
+3. AI is **Yellow** — it thinks for ~100ms then drops
+4. First to 4 in a row (horizontal, vertical, or diagonal) wins
+5. Press **R** to rematch, **Q** to quit
+
+### Tradeoffs & Decisions
+- Canvas-based (same approach as Snake) for smooth 60fps animation and precise hit detection
+- AI depth 6-8: fast enough to not freeze the terminal, strong enough to be a real challenge
+- No three-in-a-row blocking heuristic needed — minimax at depth 6 already does this naturally
+- Pieces placed in board array immediately at drop start, animation is visual only — prevents race conditions
+- AI move happens in a `setTimeout` after player animation completes cleanly
+- "Your turn" / "AI thinking" status shown in monospace info bar matching terminal aesthetic
+- R to rematch: immediate, no confirmation needed — arcade games should be fast to restart
+
+### Files changed
+- `script.js` — added `connect4` to `COMMANDS` array; added `[secret] connect4` to help output; added `cmdConnect4()` and `runConnect4()` with full game engine: board state, drop animation loop, minimax AI, win/draw detection, keyboard + mouse input, reset logic
+
+---
+
 ## 2026-04-15 — Command Palette (`Cmd+K`)
 
 ### Enhancement

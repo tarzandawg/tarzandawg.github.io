@@ -398,6 +398,116 @@
   </div>
 </div>
 
+<!-- Keyboard Shortcuts Overlay -->
+<div id="shortcuts-overlay" aria-hidden="true">
+  <div id="shortcuts-panel" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <div class="shortcuts-header">
+      <div class="shortcuts-title-row">
+        <span class="shortcuts-icon">⌨️</span>
+        <h2>Keyboard Shortcuts</h2>
+      </div>
+      <button class="shortcuts-close" id="shortcuts-close" aria-label="Close shortcuts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="shortcuts-body">
+      <div class="shortcuts-col">
+        <div class="shortcuts-group">
+          <p class="shortcuts-group-label">Navigation</p>
+          <div class="shortcuts-list">
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Hero</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>h</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to About</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>a</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Capabilities</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>w</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Projects</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>p</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Principles</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>r</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Now</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>n</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Terminal</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>t</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Contact</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>c</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Scroll to top</span>
+              <div class="shortcut-keys"><kbd>Esc</kbd></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="shortcuts-col">
+        <div class="shortcuts-group">
+          <p class="shortcuts-group-label">Global</p>
+          <div class="shortcuts-list">
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Command palette</span>
+              <div class="shortcut-keys"><kbd>⌘K</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Toggle theme</span>
+              <div class="shortcut-keys"><span class="shortcut-hint">button ↗</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="shortcuts-group">
+          <p class="shortcuts-group-label">Terminal</p>
+          <div class="shortcuts-list">
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Command history</span>
+              <div class="shortcut-keys"><kbd>↑</kbd><kbd>↓</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Tab completion</span>
+              <div class="shortcut-keys"><kbd>Tab</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Clear output</span>
+              <div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>L</kbd></div>
+            </div>
+          </div>
+        </div>
+        <div class="shortcuts-group">
+          <p class="shortcuts-group-label">Terminal Games</p>
+          <div class="shortcuts-list">
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Type <code>snake</code> in terminal</span>
+              <div class="shortcut-keys"><span class="shortcut-hint">↗ terminal</span></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Type <code>matrix</code> in terminal</span>
+              <div class="shortcut-keys"><span class="shortcut-hint">↗ terminal</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="shortcuts-footer">
+      <span>Press <kbd>?</kbd> or <kbd>Esc</kbd> to close</span>
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>

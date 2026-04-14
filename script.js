@@ -403,6 +403,153 @@ function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+// ─── Scroll Story: Particle Morphing System ────────────────────────────────────
+// Chapters and their constellation shape generators
+const CHAPTERS = [
+  { id: 'hero',       label: 'Home',          icon: '🏠', shape: 'scatter' },
+  { id: 'about',      label: 'About',         icon: '🧠', shape: 'neural' },
+  { id: 'work',       label: 'Capabilities',  icon: '⚡', shape: 'circuit' },
+  { id: 'projects',   label: 'Projects',      icon: '🚀', shape: 'burst' },
+  { id: 'principles', label: 'Principles',     icon: '⚙️', shape: 'pillars' },
+  { id: 'now',        label: 'Now',           icon: '🌍', shape: 'rings' },
+  { id: 'blog',       label: 'Blog',          icon: '✍️', shape: 'waves' },
+  { id: 'terminal',   label: 'Terminal',       icon: '⌨️', shape: 'terminal' },
+];
+
+// Shape generators — each returns [{x, y}, ...] in absolute pixel coords
+function genScatter(n) {
+  return Array.from({ length: n }, () => ({ x: rand(0, W), y: rand(0, H) }));
+}
+
+function genNeural(n) {
+  // Brain-like: several clustered groups, each with internal scatter
+  const clusters = [
+    { cx: W * 0.25, cy: H * 0.3, r: Math.min(W, H) * 0.15 },
+    { cx: W * 0.65, cy: H * 0.25, r: Math.min(W, H) * 0.13 },
+    { cx: W * 0.45, cy: H * 0.6,  r: Math.min(W, H) * 0.18 },
+    { cx: W * 0.75, cy: H * 0.65, r: Math.min(W, H) * 0.12 },
+    { cx: W * 0.2,  cy: H * 0.7,  r: Math.min(W, H) * 0.1  },
+  ];
+  return Array.from({ length: n }, () => {
+    const cl = clusters[Math.floor(rand(0, clusters.length))];
+    const angle = rand(0, Math.PI * 2);
+    const r = rand(0, cl.r);
+    return { x: cl.cx + Math.cos(angle) * r, y: cl.cy + Math.sin(angle) * r };
+  });
+}
+
+function genCircuit(n) {
+  // Connected grid with some randomness
+  const cols = 10, rows = 8;
+  const cellW = W / (cols + 1);
+  const cellH = H / (rows + 1);
+  const positions = [];
+  for (let c = 1; c <= cols; c++) {
+    for (let r = 1; r <= rows; r++) {
+      positions.push({ x: c * cellW + rand(-cellW * 0.3, cellW * 0.3), y: r * cellH + rand(-cellH * 0.3, cellH * 0.3) });
+    }
+  }
+  // Shuffle and take n
+  return positions.sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+function genBurst(n) {
+  // Radial burst from center
+  const cx = W / 2, cy = H / 2;
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i / n) * Math.PI * 2 + rand(-0.1, 0.1);
+    const r = rand(0.1, 0.95) * Math.min(W, H) * 0.48;
+    return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+  });
+}
+
+function genPillars(n) {
+  // Vertical pillars = principles standing tall
+  const numPillars = 6;
+  const pillarW = W / (numPillars + 1);
+  const positions = [];
+  for (let p = 1; p <= numPillars; p++) {
+    const px = p * pillarW;
+    const count = Math.floor(n / numPillars);
+    for (let i = 0; i < count; i++) {
+      positions.push({
+        x: px + rand(-pillarW * 0.3, pillarW * 0.3),
+        y: rand(H * 0.1, H * 0.9)
+      });
+    }
+  }
+  return positions.slice(0, n);
+}
+
+function genRings(n) {
+  // Concentric rings = global connectivity
+  const cx = W / 2, cy = H / 2;
+  const maxR = Math.min(W, H) * 0.45;
+  const rings = [0.3, 0.55, 0.75, 0.95];
+  const positions = [];
+  rings.forEach(fraction => {
+    const r = maxR * fraction;
+    const count = Math.floor(n / rings.length);
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 + rand(-0.15, 0.15);
+      positions.push({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r });
+    }
+  });
+  return positions.slice(0, n);
+}
+
+function genWaves(n) {
+  // Stacked horizontal waves = blog posts / text lines
+  const positions = [];
+  const numLines = 7;
+  const lineSpacing = H / (numLines + 1);
+  for (let l = 1; l <= numLines; l++) {
+    const y = l * lineSpacing;
+    const count = Math.floor(n / numLines);
+    for (let i = 0; i < count; i++) {
+      const wave = Math.sin((i / count) * Math.PI * 3) * H * 0.04;
+      positions.push({ x: rand(W * 0.05, W * 0.95), y: y + wave });
+    }
+  }
+  return positions.slice(0, n);
+}
+
+function genTerminalShape(n) {
+  // Command prompt shape: `> _` silhouette
+  const cx = W / 2, cy = H / 2;
+  const positions = [];
+  // The `>` arrow (two lines)
+  const arrowPts = [
+    { x: cx - W * 0.2, y: cy - H * 0.15 },
+    { x: cx - W * 0.05, y: cy },
+    { x: cx - W * 0.2, y: cy + H * 0.15 },
+  ];
+  // Cursor blink line
+  for (let i = 0; i < 8; i++) {
+    positions.push({ x: cx + i * (W * 0.04), y: cy + H * 0.15 + rand(-5, 5) });
+  }
+  // The underscore cursor
+  positions.push({ x: cx + W * 0.08, y: cy + H * 0.02 });
+  // Scatter remaining around
+  while (positions.length < n) {
+    positions.push({ x: rand(W * 0.1, W * 0.9), y: rand(H * 0.1, H * 0.9) });
+  }
+  return positions.slice(0, n);
+}
+
+function generateShape(n, shapeName) {
+  switch (shapeName) {
+    case 'neural':    return genNeural(n);
+    case 'circuit':   return genCircuit(n);
+    case 'burst':     return genBurst(n);
+    case 'pillars':   return genPillars(n);
+    case 'rings':     return genRings(n);
+    case 'waves':     return genWaves(n);
+    case 'terminal':  return genTerminalShape(n);
+    default:          return genScatter(n);
+  }
+}
+
 class Particle {
   constructor() {
     this.reset();
@@ -420,6 +567,10 @@ class Particle {
     this.baseAlpha = this.alpha;
     this.pulse = rand(0, Math.PI * 2);
     this.pulseSpeed = rand(0.005, 0.02);
+    // Morph system
+    this.targetX = this.x;
+    this.targetY = this.y;
+    this.morphStrength = 0; // 0 = free float, 1 = locked to target
   }
 
   update() {
@@ -432,6 +583,20 @@ class Particle {
         const force = (1 - dist / 300) * 0.018;
         this.vx += (dx / dist) * force;
         this.vy += (dy / dist) * force;
+      }
+    }
+
+    // ── Morph system: spring toward assigned target positions ──────────────
+    if (this.morphStrength > 0.005) {
+      const springK = 0.025 * this.morphStrength;
+      this.vx += (this.targetX - this.x) * springK;
+      this.vy += (this.targetY - this.y) * springK;
+      // Dampen morph velocity less aggressively so morphing feels organic
+      this.vx *= 0.88;
+      this.vy *= 0.88;
+      // Fade morph strength toward 0 when no active morph target
+      if (this._morphDecay) {
+        this.morphStrength = Math.max(0, this.morphStrength - 0.001);
       }
     }
 
@@ -514,6 +679,43 @@ class Ripple {
 function initParticles() {
   const count = Math.floor((W * H) / 14000);
   particles = Array.from({ length: Math.min(count, 120) }, () => new Particle());
+  // Assign initial scatter targets (hero state)
+  _applyMorphTargets('scatter');
+}
+
+// Active morph state
+let _activeMorph = 'scatter';
+let _morphTimeout = null;
+
+function _applyMorphTargets(shapeName) {
+  const n = particles.length;
+  const targets = generateShape(n, shapeName);
+  particles.forEach((p, i) => {
+    if (targets[i]) {
+      p.targetX = targets[i].x;
+      p.targetY = targets[i].y;
+    }
+    p.morphStrength = 1;
+    p._morphDecay = false;
+  });
+  _activeMorph = shapeName;
+}
+
+function triggerMorph(shapeName) {
+  if (_activeMorph === shapeName) return;
+  _applyMorphTargets(shapeName);
+  // Slight random delay per particle to create organic scatter during transition
+  particles.forEach(p => {
+    p.morphStrength = 0.3 + Math.random() * 0.7;
+    p._morphDecay = false;
+  });
+}
+
+function clearMorph() {
+  // Let particles drift back to free float
+  particles.forEach(p => {
+    p._morphDecay = true; // morphStrength will decay in update()
+  });
 }
 
 function drawConnections() {
@@ -591,7 +793,12 @@ canvas.addEventListener('click', (e) => {
 
 window.addEventListener('resize', () => {
   resize();
+  // Regenerate particles and re-apply current morph
+  const savedMorph = _activeMorph;
   initParticles();
+  if (savedMorph !== 'scatter') {
+    _applyMorphTargets(savedMorph);
+  }
 });
 
 resize();
@@ -731,7 +938,7 @@ A perfect cup of code fuel.
 Loaded. Ready. Let's go.`,
   };
 
-  const COMMANDS = ['help', 'whoami', 'skills', 'ls', 'cat', 'date', 'ping', 'clear', 'history', 'echo', 'source', 'uptime', 'matrix', 'snake', 'exit'];
+  const COMMANDS = ['help', 'whoami', 'skills', 'ls', 'cat', 'date', 'ping', 'clear', 'history', 'echo', 'source', 'uptime', 'matrix', 'snake', 'connect4', 'exit'];
   const KNOWN_FILES = Object.keys(VFS);
 
   // State
@@ -887,6 +1094,7 @@ Loaded. Ready. Let's go.`,
       { t: '  source <file> alias for cat', c: 'output' },
       { t: '  clear         clear the terminal', c: 'output' },
       { t: '  snake        [secret] play snake!', c: 'output-warn' },
+      { t: '  connect4     [secret] play Connect Four!', c: 'output-warn' },
       { t: '  matrix        [secret] easter egg', c: 'output-warn' },
       { t: '─'.repeat(42), c: 'output-purple' },
       { t: '  ↑ / ↓        navigate command history', c: 'output-info' },
@@ -1111,6 +1319,607 @@ Loaded. Ready. Let's go.`,
 
     await sleep(100);
     await typewriteLine('[ Matrix mode deactivated. Return to the terminal. ]', 'output-warn', 10);
+  }
+
+  // ── Command: Connect Four ───────────────────────────────────────────────
+  async function cmdConnect4() {
+    if (isMatrixRunning) {
+      await typewriteLine('Cannot start Connect Four while Matrix is running.', 'output-error', 8);
+      return;
+    }
+    const inputRow = document.querySelector('.terminal-input-row');
+    const terminalPrompt = document.querySelector('.terminal-prompt');
+    if (inputRow) inputRow.style.visibility = 'hidden';
+    if (terminalPrompt) terminalPrompt.style.visibility = 'hidden';
+
+    const gameCanvas = document.createElement('canvas');
+    gameCanvas.id = 'connect4-canvas';
+    Object.assign(gameCanvas.style, {
+      display: 'block',
+      margin: '0 auto 0.5rem',
+      borderRadius: '6px',
+      border: '1px solid #2a2a3e',
+      background: '#0a0a12',
+      maxWidth: '100%',
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 0.35rem; margin: 0.5rem 0;';
+    wrapper.appendChild(gameCanvas);
+
+    const infoLine = document.createElement('div');
+    infoLine.id = 'c4-info';
+    Object.assign(infoLine.style, {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: '0.78rem',
+      color: '#6c63ff',
+      textAlign: 'center',
+      letterSpacing: '0.05em',
+      minHeight: '1.2em',
+    });
+    wrapper.appendChild(infoLine);
+
+    outputEl.appendChild(wrapper);
+    scrollToBottom();
+
+    runConnect4(gameCanvas, infoLine, () => {
+      if (inputRow) inputRow.style.visibility = 'visible';
+      if (terminalPrompt) terminalPrompt.style.visibility = 'visible';
+      wrapper.remove();
+      scrollToBottom();
+      inputEl.focus();
+    });
+  }
+
+  function runConnect4(canvas, infoEl, onEnd) {
+    const COLS = 7;
+    const ROWS = 6;
+    const CELL = 52;
+    const PAD = 8;
+    const HEADER_H = 48; // space for column-click arrows
+    const W = COLS * CELL + PAD * 2;
+    const H = ROWS * CELL + PAD * 2 + HEADER_H;
+    const COL_H = ROWS * CELL + PAD * 2;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // Board: 0 = empty, 1 = red (human), 2 = yellow (AI)
+    let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    let gameOver = false;
+    let winner = 0; // 0 = draw, 1 = human, 2 = AI
+    let colWinner = -1; // winning column for highlight
+    let rowWinner = -1;
+    let dirWinner = 0;
+    let animating = false;
+    let pendingCol = -1;
+    let pendingRow = -1;
+    let dropY = -1;
+    let hoveringCol = -1;
+    let playerTurn = true;
+
+    const RED = '#ef4444';
+    const YELLOW = '#eab308';
+    const RED_GLOW = 'rgba(239, 68, 68, 0.5)';
+    const YELLOW_GLOW = 'rgba(234, 179, 8, 0.5)';
+    const PURPLE = '#6c63ff';
+    const BG = '#0a0a12';
+    const CELL_BG = '#111119';
+    const CELL_LINE = '#1e1e2e';
+
+    function updateInfo(text, color) {
+      if (!infoEl) return;
+      infoEl.textContent = text;
+      if (color) infoEl.style.color = color;
+    }
+
+    function colToX(col) {
+      return PAD + col * CELL + CELL / 2;
+    }
+
+    function rowToY(row) {
+      return HEADER_H + PAD + row * CELL + CELL / 2;
+    }
+
+    function getDropY(col) {
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (board[r][col] === 0) return r;
+      }
+      return -1;
+    }
+
+    function drawBoard() {
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, W, H);
+
+      // Column highlight on hover
+      if (hoveringCol >= 0 && !gameOver && playerTurn && !animating) {
+        const dropR = getDropY(hoveringCol);
+        if (dropR >= 0) {
+          ctx.save();
+          ctx.globalAlpha = 0.12;
+          ctx.fillStyle = RED;
+          ctx.beginPath();
+          ctx.arc(colToX(hoveringCol), rowToY(dropR), CELL / 2 - 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Column click arrows header
+      for (let c = 0; c < COLS; c++) {
+        const cx = colToX(c);
+        const cy = HEADER_H / 2;
+        const isHovered = hoveringCol === c && !gameOver && playerTurn && !animating;
+        const canDrop = getDropY(c) >= 0;
+
+        if (isHovered && canDrop) {
+          ctx.save();
+          ctx.shadowColor = RED_GLOW;
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = RED;
+          ctx.globalAlpha = 0.85;
+          // Down arrow
+          ctx.beginPath();
+          ctx.moveTo(cx, cy + 6);
+          ctx.lineTo(cx - 7, cy);
+          ctx.lineTo(cx + 7, cy);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.save();
+          ctx.fillStyle = canDrop && !gameOver ? '#2a2a3e' : '#1a1a24';
+          ctx.beginPath();
+          ctx.moveTo(cx, cy + 6);
+          ctx.lineTo(cx - 5, cy);
+          ctx.lineTo(cx + 5, cy);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Board background
+      ctx.fillStyle = CELL_BG;
+      ctx.beginPath();
+      ctx.roundRect(PAD, HEADER_H, COLS * CELL, ROWS * CELL, 12);
+      ctx.fill();
+
+      // Draw cells
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cx = colToX(c);
+          const cy = rowToY(r);
+
+          // Cell hole
+          ctx.fillStyle = BG;
+          ctx.beginPath();
+          ctx.arc(cx, cy, CELL / 2 - 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Piece (if placed, or animating)
+          let pieceVal = board[r][c];
+          let drawX = cx;
+          let drawY = cy;
+          let radius = CELL / 2 - 5;
+          let alpha = 1;
+          let glow = false;
+
+          // Check if this cell is part of winning four
+          let isWinCell = false;
+          if (gameOver && winner !== 0) {
+            isWinCell = isPartOfWin(r, c);
+          }
+
+          if (animating && pendingCol === c && pendingRow === r) {
+            // Animate piece dropping
+            const targetY = cy;
+            const startY = -CELL;
+            const t = Math.min(1, (dropY + 1) / ROWS);
+            // ease-out cubic
+            const easeT = 1 - Math.pow(1 - t, 3);
+            drawY = startY + (targetY - startY) * easeT;
+            dropY += 0.05;
+            if (dropY >= 1) {
+              dropY = 1;
+              animating = false;
+              playerTurn = false;
+              // AI move after short delay
+              setTimeout(() => {
+                if (!gameOver) aiMove();
+              }, 300);
+            }
+          }
+
+          if (pieceVal !== 0 || (animating && pendingCol === c && pendingRow === r)) {
+            if (pieceVal === 0) pieceVal = 1;
+            const color = pieceVal === 1 ? RED : YELLOW;
+            const glowColor = pieceVal === 1 ? RED_GLOW : YELLOW_GLOW;
+
+            if (isWinCell) {
+              ctx.save();
+              ctx.shadowColor = glowColor;
+              ctx.shadowBlur = 16;
+              ctx.fillStyle = color;
+              ctx.beginPath();
+              ctx.arc(drawX, drawY, radius + 2, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+
+            ctx.save();
+            if (isWinCell) ctx.globalAlpha = 1; else ctx.globalAlpha = alpha;
+            const grad = ctx.createRadialGradient(
+              drawX - radius * 0.3, drawY - radius * 0.3, radius * 0.1,
+              drawX, drawY, radius
+            );
+            grad.addColorStop(0, pieceVal === 1 ? '#fca5a5' : '#fde047');
+            grad.addColorStop(1, color);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+    }
+
+    function isPartOfWin(r, c) {
+      // Check all 4 directions from (r,c) in the winning direction
+      const val = board[r][c];
+      if (val === 0) return false;
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        // Forward
+        for (let i = 1; i < 4; i++) {
+          const nr = r + dr * i, nc = c + dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || board[nr][nc] !== val) break;
+          count++;
+        }
+        // Backward
+        for (let i = 1; i < 4; i++) {
+          const nr = r - dr * i, nc = c - dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || board[nr][nc] !== val) break;
+          count++;
+        }
+        if (count >= 4) return true;
+      }
+      return false;
+    }
+
+    function checkWinner(col, row) {
+      const val = board[row][col];
+      if (val === 0) return 0;
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        for (let i = 1; i < 4; i++) {
+          const nr = row + dr * i, nc = col + dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || board[nr][nc] !== val) break;
+          count++;
+        }
+        for (let i = 1; i < 4; i++) {
+          const nr = row - dr * i, nc = col - dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || board[nr][nc] !== val) break;
+          count++;
+        }
+        if (count >= 4) return val;
+      }
+      return 0;
+    }
+
+    function boardFull() {
+      return board[0].every(c => c !== 0);
+    }
+
+    // ── AI: minimax with alpha-beta pruning ───────────────────────────────
+    function scorePos(board, row, col, player) {
+      const val = player === 2 ? 2 : 1;
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      let score = 0;
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        let open = 0;
+        for (let i = 1; i < 4; i++) {
+          const nr = row + dr * i, nc = col + dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) break;
+          if (board[nr][nc] === val) count++;
+          else if (board[nr][nc] === 0) { open++; break; }
+          else break;
+        }
+        for (let i = 1; i < 4; i++) {
+          const nr = row - dr * i, nc = col - dc * i;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) break;
+          if (board[nr][nc] === val) count++;
+          else if (board[nr][nc] === 0) { open++; break; }
+          else break;
+        }
+        if (count >= 4) return 100000;
+        if (count === 3 && open >= 1) score += 100;
+        else if (count === 2 && open >= 2) score += 10;
+        else if (count === 3 && open === 0) score -= 500;
+      }
+      return score;
+    }
+
+    function evaluate(board, player) {
+      let score = 0;
+      // Center column preference
+      for (let r = 0; r < ROWS; r++) {
+        if (board[r][3] === player) score += 4;
+        if (board[r][2] === player) score += 2;
+        if (board[r][4] === player) score += 2;
+      }
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (board[r][c] === player) {
+            score += scorePos(board, r, c, player);
+          }
+        }
+      }
+      return score;
+    }
+
+    function copyBoard(b) {
+      return b.map(row => [...row]);
+    }
+
+    function minimax(board, depth, alpha, beta, isMaximizing, player) {
+      const ai = player;
+      const human = 3 - player;
+
+      // Terminal checks
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (board[r][c] !== 0) {
+            const w = checkWinner(c, r);
+            if (w === ai) return 1000000 + depth;
+            if (w === human) return -1000000 - depth;
+          }
+        }
+      }
+      if (boardFull()) return 0;
+      if (depth === 0) return evaluate(board, ai) - evaluate(board, human) * 0.9;
+
+      const validCols = [];
+      for (let c = 0; c < COLS; c++) {
+        if (board[0][c] === 0) validCols.push(c);
+      }
+      if (validCols.length === 0) return 0;
+
+      if (isMaximizing) {
+        let value = -Infinity;
+        for (const c of validCols) {
+          const r = getDropY_AI(board, c);
+          if (r < 0) continue;
+          const nb = copyBoard(board);
+          nb[r][c] = ai;
+          const score = minimax(nb, depth - 1, alpha, beta, false, player);
+          value = Math.max(value, score);
+          alpha = Math.max(alpha, score);
+          if (beta <= alpha) break;
+        }
+        return value;
+      } else {
+        let value = Infinity;
+        for (const c of validCols) {
+          const r = getDropY_AI(board, c);
+          if (r < 0) continue;
+          const nb = copyBoard(board);
+          nb[r][c] = human;
+          const score = minimax(nb, depth - 1, alpha, beta, true, player);
+          value = Math.min(value, score);
+          beta = Math.min(beta, score);
+          if (beta <= alpha) break;
+        }
+        return value;
+      }
+    }
+
+    function getDropY_AI(b, col) {
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (b[r][col] === 0) return r;
+      }
+      return -1;
+    }
+
+    function aiMove() {
+      if (gameOver) return;
+      updateInfo('AI is thinking…', '#eab308');
+
+      setTimeout(() => {
+        const validCols = [];
+        for (let c = 0; c < COLS; c++) {
+          if (board[0][c] === 0) validCols.push(c);
+        }
+        if (validCols.length === 0) return;
+
+        let bestScore = -Infinity;
+        let bestCol = validCols[Math.floor(Math.random() * validCols.length)];
+
+        // Try all valid columns, use decreasing depth for speed
+        const depth = validCols.length <= 4 ? 8 : 6;
+
+        for (const c of validCols) {
+          const r = getDropY_AI(board, c);
+          if (r < 0) continue;
+          const nb = copyBoard(board);
+          nb[r][c] = 2; // AI is player 2
+          const score = minimax(nb, depth - 1, -Infinity, Infinity, false, 2);
+          if (score > bestScore) {
+            bestScore = score;
+            bestCol = c;
+          }
+        }
+
+        // Add some randomness among near-best moves
+        const nearBest = validCols.filter(c => {
+          const r = getDropY_AI(board, c);
+          if (r < 0) return false;
+          const nb = copyBoard(board);
+          nb[r][c] = 2;
+          const score = minimax(nb, 3, -Infinity, Infinity, false, 2);
+          return score >= bestScore - 50;
+        });
+        bestCol = nearBest[Math.floor(Math.random() * nearBest.length)] || bestCol;
+
+        const dropRow = getDropY(bestCol);
+        if (dropRow < 0) {
+          playerTurn = true;
+          updateInfo('Your turn! Click a column to drop a piece.', RED);
+          return;
+        }
+
+        board[dropRow][bestCol] = 2;
+        const w = checkWinner(bestCol, dropRow);
+        if (w !== 0) {
+          gameOver = true;
+          winner = w;
+          updateInfo('AI wins! 🎉  Press R to rematch — Q to quit', '#eab308');
+          drawBoard();
+          return;
+        }
+        if (boardFull()) {
+          gameOver = true;
+          updateInfo("It's a draw! 🤝  Press R to rematch — Q to quit", '#6c63ff');
+          drawBoard();
+          return;
+        }
+
+        playerTurn = true;
+        updateInfo('Your turn! Click a column to drop a piece.', RED);
+        drawBoard();
+      }, 100);
+    }
+
+    function dropPiece(col) {
+      if (gameOver || animating || !playerTurn) return;
+      const row = getDropY(col);
+      if (row < 0) return;
+
+      pendingCol = col;
+      pendingRow = row;
+      dropY = 0;
+      animating = true;
+      board[row][col] = 1; // place piece
+      updateInfo('Dropping…', RED);
+      drawBoard();
+
+      // Animation loop
+      function animLoop() {
+        drawBoard();
+        if (animating) {
+          requestAnimationFrame(animLoop);
+        } else {
+          // Animation finished — check win
+          const w = checkWinner(pendingCol, pendingRow);
+          if (w !== 0) {
+            gameOver = true;
+            winner = w;
+            updateInfo('You win! 🎉  Press R to rematch — Q to quit', RED);
+            drawBoard();
+            return;
+          }
+          if (boardFull()) {
+            gameOver = true;
+            updateInfo("It's a draw! 🤝  Press R to rematch — Q to quit", '#6c63ff');
+            drawBoard();
+            return;
+          }
+          playerTurn = false;
+          updateInfo('AI is thinking…', '#eab308');
+          drawBoard();
+          setTimeout(() => aiMove(), 200);
+        }
+      }
+      requestAnimationFrame(animLoop);
+    }
+
+    function resetGame() {
+      board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      gameOver = false;
+      winner = 0;
+      animating = false;
+      pendingCol = -1;
+      pendingRow = -1;
+      playerTurn = true;
+      updateInfo('Your turn! Click a column to drop a piece.', RED);
+      drawBoard();
+    }
+
+    // Initial render
+    updateInfo('Your turn! Click a column to drop a piece.', RED);
+    drawBoard();
+
+    // Mouse/touch handlers
+    let lastClickCol = -1;
+    let lastClickTime = 0;
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const mx = (e.clientX - rect.left) * scaleX;
+      hoveringCol = Math.floor((mx - PAD) / CELL);
+      if (hoveringCol < 0 || hoveringCol >= COLS) hoveringCol = -1;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      hoveringCol = -1;
+    });
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const col = Math.floor((mx - PAD) / CELL);
+      if (col < 0 || col >= COLS) return;
+
+      // Debounce double-click
+      const now = Date.now();
+      if (col === lastClickCol && now - lastClickTime < 400) return;
+      lastClickCol = col;
+      lastClickTime = now;
+
+      dropPiece(col);
+    });
+
+    // Keyboard handler — scoped to Connect Four
+    function handleKey(e) {
+      if (gameOver) {
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetGame();
+        } else if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+          quitGame();
+        }
+        return;
+      }
+      const colKeys = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6 };
+      if (colKeys[e.key] !== undefined) {
+        e.preventDefault();
+        dropPiece(colKeys[e.key]);
+      } else if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+        quitGame();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetGame();
+      }
+    }
+
+    function quitGame() {
+      document.removeEventListener('keydown', handleKey);
+      onEnd();
+    }
+
+    document.addEventListener('keydown', handleKey);
   }
 
   // ── Command: snake ──────────────────────────────────────────────────────
@@ -1561,6 +2370,7 @@ Loaded. Ready. Let's go.`,
       case 'clear':   cmdClear();          break;
       case 'matrix':  await cmdMatrix();   break;
       case 'snake':    await cmdSnake();    break;
+      case 'connect4': await cmdConnect4(); break;
       case 'exit':
         await typewriteLine('There is no exit. Only Tars.', 'output-warn', 15);
         break;
@@ -2753,6 +3563,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       group: 'Terminal secrets',
       items: [
         { icon: '🐍', name: 'snake',              desc: 'Play Snake in the terminal',  shortcut: null, action: () => { scrollTo('#terminal'); setTimeout(() => { const inp = document.getElementById('terminal-input'); if (inp) { inp.focus(); inp.value = 'snake'; inp.dispatchEvent(new Event('input')); } }, 400); } },
+        { icon: '🎮', name: 'connect4',           desc: 'Play Connect Four in the terminal', shortcut: null, action: () => { scrollTo('#terminal'); setTimeout(() => { const inp = document.getElementById('terminal-input'); if (inp) { inp.focus(); inp.value = 'connect4'; inp.dispatchEvent(new Event('input')); } }, 400); } },
         { icon: '💊', name: 'matrix',             desc: 'Matrix easter egg',            shortcut: null, action: () => { scrollTo('#terminal'); setTimeout(() => { const inp = document.getElementById('terminal-input'); if (inp) { inp.focus(); inp.value = 'matrix'; inp.dispatchEvent(new Event('input')); } }, 400); } },
         { icon: '📋', name: 'whoami',             desc: 'Print identity',              shortcut: null, action: () => termCmd('whoami') },
         { icon: '📂', name: 'ls',                 desc: 'List virtual files',          shortcut: null, action: () => termCmd('ls') },
@@ -2939,6 +3750,67 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   // ── Click backdrop to close ──────────────────────────────────────────────
   overlay.addEventListener('click', function (e) {
     if (e.target === overlay) close();
+  });
+})();
+
+// ─── Keyboard Shortcuts Overlay ──────────────────────────────────────────
+(function () {
+  const overlay = document.getElementById('shortcuts-overlay');
+  const panel   = document.getElementById('shortcuts-panel');
+  const closeBtn = document.getElementById('shortcuts-close');
+  if (!overlay || !panel) return;
+
+  let isOpen = false;
+
+  function open() {
+    isOpen = true;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function close() {
+    if (!isOpen) return;
+    isOpen = false;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', close);
+  }
+
+  // Backdrop click to close
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) close();
+  });
+
+  // ── Keyboard shortcut: ? ─────────────────────────────────────────────
+  document.addEventListener('keydown', function (e) {
+    // Skip if focus is inside an input/textarea
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    // ? to open (plain key, not shift+? which is shift)
+    if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+      // Only fire on ? (US keyboard) — avoid interfering with other locales
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        open();
+        return;
+      }
+    }
+
+    if (e.key === 'Escape') {
+      if (isOpen) {
+        e.preventDefault();
+        close();
+      }
+      return;
+    }
   });
 })();
 

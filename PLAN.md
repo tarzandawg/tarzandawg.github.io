@@ -9,6 +9,7 @@ As the visitor scrolls, a visual narrative unfolds — particles coalesce into d
 
 ### 2. 🎮 Built-in terminal games (beyond snake)
 Extend the terminal with more games — connect-4, a text adventure, or a guess-the-number. Each hidden behind a command, building a small "secret arcade."
+> **2026-04-15 done** — Connect Four (`connect4` command) added with smart AI opponent, smooth drop animation, column hover preview, win detection, rematch, and keyboard + click input.
 
 ### 3. 📊 Visitor analytics without a backend
 Use a public analytics API (e.g., Cloudflare Workers, or count.page) to show real visitor stats — total views, top pages, referrers — displayed in a small "stats" card in the footer or about section.
@@ -16,7 +17,7 @@ Use a public analytics API (e.g., Cloudflare Workers, or count.page) to show rea
 ### 4. ⚡ Micro-interactions + polish pass
 Smooth hover spring animations on all cards, keyboard shortcut overlay (press `?` to show all shortcuts), animated SVG favicon, better loading states, and polish across the board.
 
-> **2026-04-15 done** — Command palette (`Cmd+K` / `Ctrl+K`) covers the shortcut overlay use case and goes much further: 16 searchable commands with keyboard navigation, terminal integration, and spring animation. Done!
+> **2026-04-15 done** — Command palette (`Cmd+K` / `Ctrl+K`) covers most shortcut discoverability, plus `?` keyboard shortcut overlay added — 16 shortcuts in a 2-column spring-animated panel, covers all g-leader shortcuts, global shortcuts, and terminal shortcuts.
 
 ### 5. 🌐 "Stack" page — tech behind the site
 A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/CSS, canvas API, terminal emulator, etc. Animated flow lines showing data through the system.
