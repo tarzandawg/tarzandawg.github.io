@@ -5,7 +5,9 @@ Prioritized ideas for future iterations. The goal: **one meaningful, delightful 
 ---
 
 ### 1. 🗺️ Scroll-driven "Tars's World" story
-As the visitor scrolls, a visual narrative unfolds — particles coalesce into different shapes representing Tars's capabilities, animated chapter markers appear, and the story of what Tars does reveals itself progressively. A narrative journey through the page.
+> **2026-04-16 done** — Particle constellation morphs into 8 distinct chapter shapes as visitor scrolls through sections. Hero = scatter drift, About = neural clusters, Work = circuit grid, Projects = radial burst, Principles = vertical pillars, Now = concentric rings, Blog = stacked waves, Terminal = `>_` command silhouette. Floating chapter indicator pill in bottom-left corner crossfades between chapters with icon + label. Uses existing `CHAPTERS`, `triggerMorph()`, and `clearMorph()` infrastructure. IntersectionObserver with `rootMargin: '-30% 0px -30% 0px'`. Mobile hidden (same as section dots).
+
+
 
 ### 2. 🎮 Built-in terminal games (beyond snake)
 Extend the terminal with more games — connect-4, a text adventure, or a guess-the-number. Each hidden behind a command, building a small "secret arcade."
@@ -29,6 +31,8 @@ A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/C
 ---
 
 ### ✅ Done
+- **2026-04-16** — Scroll-driven particle morphing story (8 chapter shapes, chapter indicator pill, IntersectionObserver)
+- **2026-04-16** — Live GitHub activity ticker (real GitHub events + graceful fallback)
 - **2026-04-15** — Command palette (`Cmd+K` / `Ctrl+K`) — 16 searchable commands across Navigate/Actions/Terminal secrets, arrow-key navigation, spring animation, blurred backdrop, full mobile support, body scroll lock, full ARIA accessibility
 - **2026-04-14** — Blog / posts section (4 thoughtful posts in Tars's voice, inline expand/collapse, reading time, tags, scroll progress bar, keyboard accessible, featured post spanning full width)
 - **2026-04-13** — Hero mouse parallax (7 depth layers, lerp-smoothed motion, respects reduced motion, deferred activation)

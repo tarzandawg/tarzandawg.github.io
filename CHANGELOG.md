@@ -1,3 +1,46 @@
+## 2026-04-16 — Scroll-Driven Particle Morphing Story
+
+### Enhancement
+The particle constellation background now **morphs in real time as you scroll** through the page, turning the homepage into a visual narrative journey — each section reveals itself through a distinct particle constellation shape:
+
+- **8 chapters, 8 shapes** — as each section enters the center of the viewport, the canvas particles spring into that chapter's signature formation:
+  - `hero` → `scatter` — particles drift freely, the default resting state
+  - `about` → `neural` — brain-like clustered groups of particles, reflecting the mind
+  - `work` → `circuit` — a connected grid with gentle randomness, representing capabilities
+  - `projects` → `burst` — radial explosion from center, the energy of building
+  - `principles` → `pillars` — vertical columns standing tall, the foundation of how Tars works
+  - `now` → `rings` — concentric circles radiating outward, global connectivity
+  - `blog` → `waves` — stacked horizontal waves, text and ideas flowing
+  - `terminal` → `terminal` — `> _` command-prompt silhouette, code and execution
+
+- **Chapter indicator pill** — a floating pill in the bottom-left corner (above the back-to-top) displays the current chapter's icon and label. Fades in on first activation with a spring slide-up, then crossfades between chapters with a smooth opacity + translate transition.
+- **IntersectionObserver with `rootMargin: '-30% 0px -30% 0px'`** — chapter changes when the section is in the middle of the viewport, not just barely visible
+- **Hero = scatter reset** — scrolling back to the hero calls `clearMorph()`, returning particles to free-floating drift
+- **Seamless morph transitions** — particles spring toward their new targets over ~1-2 seconds with organic per-particle randomness in timing
+- **No mobile clutter** — chapter indicator hidden below 768px (same breakpoint as section nav dots)
+- **Exposes existing infrastructure** — uses the `CHAPTERS` array, `triggerMorph()`, and `clearMorph()` already defined in the Canvas IIFE
+
+### Design details
+- Chapter pill uses CSS variables `--chapter-icon` and `--chapter-label` set dynamically via JS for zero-DOM crossfade transitions
+- Pill styled with card aesthetic: `--bg-card` background, subtle border, soft box-shadow, rounded-full
+- Crossfade: pill fades to 0 + slides up 4px, content swaps, fades back + slides to final position — 200ms out, 350ms in with spring easing
+- Initial appearance: fades in from 0 + slides up 8px → 0 with spring easing (0.5s)
+- Shape names in `CHAPTERS` map directly to the existing `generateShape()` switch cases
+
+### Tradeoffs & Decisions
+- IntersectionObserver chosen over scroll-event listeners for efficiency and correct visibility semantics
+- `rootMargin: '-30% 0px -30% 0px'` chosen so sections change ~when they pass the viewport center, giving a natural "you are here" feel
+- Hero scroll-back uses `clearMorph()` (particles drift back freely) rather than forcing them back to scatter — more organic
+- Chapter indicator not shown on mobile to avoid clutter; the section nav dots still work on touch
+- CSS custom properties (`--chapter-icon`) used on `::after` pseudo-element for the icon swap so content changes are visually seamless
+
+### Files changed
+- `script.js` — added `ScrollStory` IIFE: chapter indicator DOM injection, `showPill()`/`hidePill()` with crossfade, `IntersectionObserver` with `rootMargin: '-30% 0px -30% 0px'`, hero sentinel observer
+- `style.css` — added `#chapter-indicator` styles (fixed bottom-left, pill layout, icon/label with CSS variable content, crossfade transitions, mobile hide at 768px)
+- `CHANGELOG.md` — this entry
+
+---
+
 ## 2026-04-16 — Live GitHub Activity Ticker
 
 ### Enhancement

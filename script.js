@@ -3541,6 +3541,114 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
+// ─── Scroll-Driven Particle Morphing Story ───────────────────────────────────
+// Watches sections via IntersectionObserver and morphs the canvas particle
+// constellation to match each chapter's shape. Also shows a chapter indicator pill.
+
+(function () {
+  // ── Chapter indicator pill ────────────────────────────────────────────────
+  const pill = document.createElement('div');
+  pill.id = 'chapter-indicator';
+  pill.setAttribute('aria-hidden', 'true');
+  pill.innerHTML =
+    '<span class="chapter-icon"></span>' +
+    '<span class="chapter-label"></span>';
+  document.body.appendChild(pill);
+
+  // Set initial state (hidden)
+  pill.style.opacity = '0';
+  pill.style.transform = 'translateY(8px)';
+  pill.style.pointerEvents = 'none';
+
+  let pillVisible = false;
+  let currentChapter = null;
+
+  function showPill(chapter) {
+    if (currentChapter && currentChapter.id === chapter.id) return;
+    currentChapter = chapter;
+
+    // Set CSS variables for crossfade
+    pill.style.setProperty('--chapter-icon', `"${chapter.icon}"`);
+    pill.style.setProperty('--chapter-label', `"${chapter.label}"`);
+
+    if (!pillVisible) {
+      pillVisible = true;
+      // Fade + slide in
+      pill.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      pill.style.opacity = '1';
+      pill.style.transform = 'translateY(0)';
+    } else {
+      // Crossfade: add brief fade-out, swap content, fade back
+      pill.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      pill.style.opacity = '0';
+      pill.style.transform = 'translateY(-4px)';
+      setTimeout(() => {
+        pill.style.setProperty('--chapter-icon', `"${chapter.icon}"`);
+        pill.style.setProperty('--chapter-label', `"${chapter.label}"`);
+        pill.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        pill.style.opacity = '1';
+        pill.style.transform = 'translateY(0)';
+      }, 200);
+    }
+  }
+
+  function hidePill() {
+    if (!pillVisible) return;
+    pillVisible = false;
+    pill.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    pill.style.opacity = '0';
+    pill.style.transform = 'translateY(8px)';
+    currentChapter = null;
+  }
+
+  // ── IntersectionObserver: scroll story ───────────────────────────────────
+  const storyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.id;
+      // Find matching chapter
+      const chapter = CHAPTERS.find(c => c.id === id);
+      if (!chapter) return;
+
+      if (entry.isIntersecting) {
+        // Section is in the center of the viewport — morph particles
+        if (chapter.shape === 'scatter') {
+          clearMorph();
+        } else {
+          triggerMorph(chapter.shape);
+        }
+        showPill(chapter);
+      } else {
+        // Section left the viewport center — no action needed here;
+        // the next intersecting section will take over
+      }
+    });
+  }, {
+    // Trigger when section enters the middle 40% of viewport
+    rootMargin: '-30% 0px -30% 0px',
+    threshold: 0,
+  });
+
+  // Observe all chapter sections
+  CHAPTERS.forEach(({ id }) => {
+    const el = document.getElementById(id);
+    if (el) storyObserver.observe(el);
+  });
+
+  // Hide pill when near the very top (before hero is visible)
+  const heroObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        // Hero is in view — ensure pill shows hero state
+        const heroChapter = CHAPTERS.find(c => c.id === 'hero');
+        if (heroChapter) showPill(heroChapter);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const hero = document.getElementById('hero');
+  if (hero) heroObserver.observe(hero);
+})();
+
 // ─── Scroll Progress Bar + Section Nav + Back to Top ────────────────────────
 (function () {
   const progressBar = document.getElementById('scroll-progress');
