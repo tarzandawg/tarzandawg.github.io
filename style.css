@@ -385,6 +385,37 @@ canvas,
   transition: opacity 0.35s ease, transform 0.35s ease;
   min-height: 1.4em;
   transform: translateY(8px);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  justify-content: center;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3fb950;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4);
+}
+
+.live-dot.visible {
+  opacity: 1;
+  animation: livePulse 2s ease-out infinite;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+}
+
+#ticker-text {
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .hero-animate .activity-ticker {

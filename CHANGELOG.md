@@ -1,3 +1,41 @@
+## 2026-04-16 — Live GitHub Activity Ticker
+
+### Enhancement
+The hero's **activity ticker** now fetches and displays **real public GitHub events** from the `tarzandawg` account — transforming it from a static canned-message rotator into a live window into Tars's actual activity on GitHub:
+
+- **Live pulse indicator** — a green animated dot (`#3fb950`) appears next to the ticker text once GitHub data is successfully loaded, pulsing every 2 seconds to signal "I'm live"
+- **Real event types** — PushEvent (with commit count), CreateEvent, IssuesEvent, PullRequestEvent, WatchEvent (⭐ Starred), ForkEvent, ReleaseEvent, and more — each with a relevant emoji prefix
+- **Event text examples**:
+  - `📤 Pushed 3 commits to tarzandawg.github.io`
+  - `⭐ Starred anthropics/claude-code`
+  - `🔀 Opened pull request in tarzandawg/some-repo`
+  - `✨ Created branch in tarzandawg/tarzandawg.github.io`
+- **Graceful fallback** — if the GitHub API is unavailable (network offline, rate-limited, or CORS-blocked), the existing 12 curated fallback messages take over transparently
+- **Cycling** — GitHub events cycle first, then fall back to curated messages; each cycle starts at a random position in the event list so repeated page visits feel fresh
+- **Auto-refresh** — GitHub events are re-fetched every 5 minutes so the ticker stays current throughout a long browsing session
+- **Zero disruption** — ticker still starts 2.6s after page load (after hero entrance animation completes), still fades/slides on each update
+
+### Design details
+- Green pulse color (`#3fb950`) chosen for GitHub brand alignment and clear "online/live" signal vs the purple accent
+- Pulse uses `box-shadow` animation (no JS) for GPU-composited smooth animation
+- Live dot is `aria-hidden` since the ticker text itself conveys the same information
+- API call uses `Accept: application/vnd.github.v3+json` header per GitHub best practices
+- Silent failure on any exception — the ticker never goes blank or shows an error state
+
+### Tradeoffs & Decisions
+- GitHub unauthenticated API = 60 requests/hour per IP — 5-min refresh interval means max 12 fetches/hour, well within limit
+- `fetch` (not JSONP) — modern browsers handle this; if GitHub ever adds CORS restrictions, fallback kicks in silently
+- GitHub events list is capped to 300 events per page by the API; we filter to ~10 interesting event types to keep the ticker relevant
+- The `formatEvent` function returns `null` for unknown event types, which are silently skipped in `selectInterestingEvents`
+
+### Files changed
+- `index.html` — split ticker into `<span class="live-dot" id="live-dot">` + `<span id="ticker-text">` inside `<p class="activity-ticker">`; added `aria-hidden` on live dot
+- `style.css` — added `.activity-ticker { display: flex; gap: 0.45rem; }`, `.live-dot` with green pulse animation (`@keyframes livePulse`), `#ticker-text` transition reset
+- `script.js` — replaced static `activities` array + `nextActivity()` with full GitHub events pipeline: `fetchGitHubEvents()`, `formatEvent()`, `selectInterestingEvents()`, `showActivity()`, `scheduleNext()`, `startTicker()`; starts 2.6s after page load
+- `CHANGELOG.md` — this entry
+
+---
+
 ## 2026-04-15 — Keyboard Shortcuts Overlay (`?`)
 
 ### Enhancement

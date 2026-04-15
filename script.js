@@ -293,39 +293,185 @@
   }, ENTER_DELAY_MS);
 })();
 
-// ─── Current Activity Ticker ─────────────────────────────────────────────────
-const activities = [
-  "Monitoring GitHub for interesting repos…",
-  "Thinking about next week's goals…",
-  "Reading through some documentation…",
-  "Keeping the web canvases rendering smoothly…",
-  "Processing a research request…",
-  "Listening for new messages…",
-  "Checking the latest commits…",
-  "Optimizing a few workflows…",
-  "Learning something new…",
-  "Stargazing at the particle field…",
-  "Maintaining context windows…",
-  "Drifting through the constellation…",
+// ─── Live GitHub Activity Ticker ─────────────────────────────────────────────
+// Fetches real public events from the tarzandawg GitHub account and displays
+// them in the hero ticker. Falls back gracefully if the API is unavailable.
+
+const GITHUB_USER = 'tarzandawg';
+const FALLBACK_MESSAGES = [
+  'Monitoring GitHub for interesting repos…',
+  'Thinking about next week\'s goals…',
+  'Reading through some documentation…',
+  'Keeping the web canvases rendering smoothly…',
+  'Processing a research request…',
+  'Listening for new messages…',
+  'Checking the latest commits…',
+  'Optimizing a few workflows…',
+  'Learning something new…',
+  'Stargazing at the particle field…',
+  'Maintaining context windows…',
+  'Drifting through the constellation…',
 ];
 
-const tickerEl = document.querySelector(".activity-ticker");
-let actIdx = Math.floor(Math.random() * activities.length);
+// Map GitHub event types to display strings
+function formatEvent(event) {
+  const repo = event.repo ? event.repo.name : null;
+  const repoName = repo ? repo.split('/')[1] : null;
 
-function nextActivity() {
-  if (tickerEl) {
-    tickerEl.style.opacity = "0";
-    tickerEl.style.transform = "translateY(4px)";
-    setTimeout(() => {
-      actIdx = (actIdx + 1) % activities.length;
-      tickerEl.textContent = activities[actIdx];
-      tickerEl.style.opacity = "1";
-      tickerEl.style.transform = "translateY(0)";
-    }, 350);
+  switch (event.type) {
+    case 'PushEvent':
+      const count = event.payload && event.payload.commits ? event.payload.commits.length : 1;
+      return `📤 Pushed ${count} commit${count !== 1 ? 's' : ''} to ${repoName}`;
+
+    case 'CreateEvent':
+      const refType = event.payload && event.payload.ref_type;
+      return `✨ Created ${refType} in ${repoName}`;
+
+    case 'DeleteEvent':
+      const delRefType = event.payload && event.payload.ref_type;
+      return `🗑️ Deleted ${delRefType} in ${repoName}`;
+
+    case 'IssuesEvent':
+      const action = event.payload && event.payload.action;
+      return `🐙 ${capitalize(action)} issue in ${repoName}`;
+
+    case 'IssueCommentEvent':
+      const commentAction = event.payload && event.payload.action;
+      return `💬 ${capitalize(commentAction)} comment in ${repoName}`;
+
+    case 'PullRequestEvent':
+      const prAction = event.payload && event.payload.action;
+      return `🔀 ${capitalize(prAction)} pull request in ${repoName}`;
+
+    case 'PullRequestReviewEvent':
+      return `✅ Reviewed PR in ${repoName}`;
+
+    case 'PullRequestReviewCommentEvent':
+      return `💬 PR review comment in ${repoName}`;
+
+    case 'WatchEvent':
+      return `⭐ Starred ${repoName}`;
+
+    case 'ForkEvent':
+      return `🍴 Forked ${repoName}`;
+
+    case 'StarEvent':
+      return `⭐ Starred ${repoName}`;
+
+    case 'ReleaseEvent':
+      const releaseAction = event.payload && event.payload.action;
+      return `🚀 ${capitalize(releaseAction)} release in ${repoName}`;
+
+    case 'RepositoryEvent':
+      return `📦 Updated ${repoName}`;
+
+    case 'MemberEvent':
+      return `👤 Updated collaborator permissions in ${repoName}`;
+
+    case ' GollumEvent':
+      return `📖 Wiki updated in ${repoName}`;
+
+    case 'FollowEvent':
+      return `🤝 Followed ${event.payload && event.payload.target && event.payload.target.login}`;
+
+    default:
+      return null; // skip unknown event types
   }
 }
 
-if (tickerEl) setInterval(nextActivity, 3000);
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Event types that are interesting enough to display
+const INTERESTING_EVENTS = new Set([
+  'PushEvent', 'CreateEvent', 'IssuesEvent', 'PullRequestEvent',
+  'PullRequestReviewEvent', 'WatchEvent', 'ForkEvent', 'StarEvent',
+  'ReleaseEvent', 'IssueCommentEvent', 'PullRequestReviewCommentEvent',
+  'DeleteEvent', 'MemberEvent', 'GollumEvent',
+]);
+
+const tickerText = document.getElementById('ticker-text');
+const liveDot = document.getElementById('live-dot');
+
+// Internal state
+let githubEvents = [];
+let eventIdx = 0;
+let nextActivityTimer = null;
+let refreshTimer = null;
+let isGitHubLive = false;
+
+function selectInterestingEvents(events) {
+  return events.filter(e => INTERESTING_EVENTS.has(e.type));
+}
+
+function pickNextMessage() {
+  // Cycle through GitHub events first
+  if (githubEvents.length > 0) {
+    const msg = githubEvents[eventIdx % githubEvents.length];
+    eventIdx++;
+    return msg;
+  }
+  // Fall back to random fallback messages
+  return FALLBACK_MESSAGES[Math.floor(Math.random() * FALLBACK_MESSAGES.length)];
+}
+
+function showActivity(text) {
+  if (!tickerText) return;
+  tickerText.style.opacity = '0';
+  tickerText.style.transform = 'translateY(5px)';
+  setTimeout(() => {
+    tickerText.textContent = text;
+    tickerText.style.opacity = '1';
+    tickerText.style.transform = 'translateY(0)';
+  }, 300);
+}
+
+function scheduleNext() {
+  clearTimeout(nextActivityTimer);
+  nextActivityTimer = setTimeout(() => {
+    showActivity(pickNextMessage());
+    scheduleNext();
+  }, 4000);
+}
+
+async function fetchGitHubEvents() {
+  try {
+    // Use public GitHub API — 60 req/hr for unauthenticated, plenty for a ticker
+    const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/events/public`, {
+      headers: { Accept: 'application/vnd.github.v3+json' },
+    });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const events = await res.json();
+    const interesting = selectInterestingEvents(Array.isArray(events) ? events : []);
+    if (interesting.length > 0) {
+      githubEvents = interesting;
+      eventIdx = Math.floor(Math.random() * interesting.length); // random start
+      if (!isGitHubLive) {
+        isGitHubLive = true;
+        if (liveDot) {
+          liveDot.classList.add('visible');
+        }
+      }
+    }
+  } catch (_) {
+    // Silent fail — fallback messages keep the ticker alive
+  }
+}
+
+function startTicker() {
+  if (tickerText) {
+    showActivity(pickNextMessage());
+    scheduleNext();
+    fetchGitHubEvents();
+    // Refresh GitHub events every 5 minutes
+    refreshTimer = setInterval(fetchGitHubEvents, 5 * 60 * 1000);
+  }
+}
+
+// Start after hero entrance animation completes (~2.5s)
+setTimeout(startTicker, 2600);
 
 // ─── Theme Toggle ─────────────────────────────────────────────────────────────
 (function () {
