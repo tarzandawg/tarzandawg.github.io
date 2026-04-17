@@ -304,6 +304,53 @@ canvas,
   animation-delay: 1.8s;
   opacity: 0;
   transform: scale(0);
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Sonar Rings ──────────────────────────────────────────────────────────── */
+.sonar-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 2px solid rgba(108, 99, 255, 0.4);
+  box-shadow: 0 0 12px rgba(108, 99, 255, 0.3), inset 0 0 12px rgba(108, 99, 255, 0.15);
+  pointer-events: none;
+  animation: sonar 3s ease-out infinite;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+}
+
+.sonar-ring:nth-child(1) { animation-delay: 0s; }
+.sonar-ring:nth-child(2) { animation-delay: 1s; }
+.sonar-ring:nth-child(3) { animation-delay: 2s; }
+
+@keyframes sonar {
+  0%   { transform: translate(-50%, -50%) scale(1);    opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+}
+
+body.light-mode .sonar-ring {
+  border-color: rgba(108, 99, 255, 0.25);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.15), inset 0 0 8px rgba(108, 99, 255, 0.1);
+}
+
+/* ─── Hero Scroll Parallax ─────────────────────────────────────────────────── */
+.hero-content {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.hero-content.parallax-recede {
+  transform: scale(0.96);
+  opacity: 0.6;
+}
+
+.hero::before.hero-glow-fade {
+  opacity: 0.2;
+  transition: opacity 0.4s ease;
 }
 
 /* Hero entrance animation — applied on page load */
@@ -2568,3 +2615,132 @@ body.cursor-active textarea {
     padding-bottom: 1rem;
   }
 }
+
+/* ─── CRT Mode ──────────────────────────────────────────────────────────── */
+#crt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+#crt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+#crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.crt-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  animation: crtFlicker 0.08s infinite;
+}
+
+@keyframes crtFlicker {
+  0%   { background: rgba(0, 0, 0, 0.03); }
+  25%  { background: rgba(0, 0, 0, 0.01); }
+  50%  { background: rgba(0, 0, 0, 0.04); }
+  75%  { background: rgba(0, 0, 0, 0.015); }
+  100% { background: rgba(0, 0, 0, 0.02); }
+}
+
+/* CRT mode activated */
+body.crt-active #crt-overlay {
+  opacity: 1;
+}
+
+/* Chromatic aberration on key text */
+body.crt-active h1,
+body.crt-active h2,
+body.crt-active h3 {
+  text-shadow:
+    -0.5px  0    rgba(255, 0, 80, 0.4),
+     0.5px  0    rgba(0, 200, 255, 0.4);
+}
+
+/* Phosphor green glow on accent text */
+body.crt-active .tagline,
+body.crt-active .section-title,
+body.crt-active .section-label {
+  color: #b8ffb8 !important;
+  text-shadow:
+    0 0 8px rgba(100, 255, 100, 0.7),
+    0 0 20px rgba(100, 255, 100, 0.3);
+}
+
+/* CRT green tint on cards */
+body.crt-active .card,
+body.crt-active .ghstat-card,
+body.crt-active .clock-row,
+body.crt-active .current-card,
+body.crt-active .link-card,
+body.crt-active .post-card,
+body.crt-active .project-card,
+body.crt-active .terminal-window {
+  border-color: rgba(100, 200, 100, 0.3) !important;
+  box-shadow:
+    inset 0 0 30px rgba(0, 60, 0, 0.15),
+    0 0 12px rgba(0, 150, 0, 0.08) !important;
+}
+
+/* CRT green glow on accent elements */
+body.crt-active .accent,
+body.crt-active .btn-primary {
+  box-shadow: 0 0 16px rgba(100, 255, 100, 0.4) !important;
+}
+
+/* CRT boot message styling */
+body.crt-active .terminal-output .crt-boot {
+  color: #33ff33;
+  text-shadow: 0 0 6px #33ff33;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* CRT exit hint */
+#crt-exit-hint {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9001;
+  background: rgba(0, 20, 0, 0.85);
+  color: #33ff33;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(51, 255, 51, 0.4);
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  text-shadow: 0 0 6px #33ff33;
+  box-shadow: 0 0 12px rgba(51, 255, 51, 0.15);
+}
+
+#crt-exit-hint.visible {
+  opacity: 1;
+}
+

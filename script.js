@@ -3541,6 +3541,40 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 });
 
 
+// ─── Hero Scroll Parallax ─────────────────────────────────────────────────────
+(function () {
+  const sentinel = document.getElementById('hero-sentinel');
+  const heroContent = document.querySelector('.hero-content');
+  const heroBefore = document.querySelector('.hero');
+
+  if (!sentinel || !heroContent) return;
+
+  function applyRecede(active) {
+    if (active) {
+      heroContent.classList.add('parallax-recede');
+      heroBefore.classList.add('hero-glow-fade');
+    } else {
+      heroContent.classList.remove('parallax-recede');
+      heroBefore.classList.remove('hero-glow-fade');
+    }
+  }
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      // entry.intersectionRatio = how much of the sentinel is visible
+      if (entry.intersectionRatio <= 0.4) {
+        applyRecede(true);
+      } else {
+        applyRecede(false);
+      }
+    });
+  }, {
+    threshold: [0, 0.4, 1]
+  });
+
+  observer.observe(sentinel);
+})();
+
 // ─── Scroll-Driven Particle Morphing Story ───────────────────────────────────
 // Watches sections via IntersectionObserver and morphs the canvas particle
 // constellation to match each chapter's shape. Also shows a chapter indicator pill.
@@ -3765,6 +3799,42 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         }
       }
       gKeyPending = false;
+    }
+  });
+
+  // ── Konami Code: ↑↑↓↓←→←→BA ──────────────────────────────
+  const KONAMI_SEQ = [
+    'ArrowUp', 'ArrowUp',
+    'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight',
+    'ArrowLeft', 'ArrowRight',
+    'b', 'a'
+  ];
+  let konamiIdx = 0;
+  let konamiTimeout = null;
+
+  document.addEventListener('keydown', (e) => {
+    // Skip if typing in an input
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    // CRT mode ESC handler (separate from the global scroll-to-top Escape)
+    if (document.body.classList.contains('crt-active') && e.key === 'Escape') {
+      exitCRT();
+      return;
+    }
+
+    // Track Konami sequence
+    if (e.key === KONAMI_SEQ[konamiIdx]) {
+      konamiIdx++;
+      clearTimeout(konamiTimeout);
+      konamiTimeout = setTimeout(() => { konamiIdx = 0; }, 2000);
+      if (konamiIdx === KONAMI_SEQ.length) {
+        konamiIdx = 0;
+        enterCRT();
+      }
+    } else {
+      konamiIdx = 0;
     }
   });
 

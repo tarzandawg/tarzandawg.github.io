@@ -7,6 +7,9 @@ Prioritized ideas for future iterations. The goal: **one meaningful, delightful 
 ### 1. 🗺️ Scroll-driven "Tars's World" story
 > **2026-04-16 done** — Particle constellation morphs into 8 distinct chapter shapes as visitor scrolls through sections. Hero = scatter drift, About = neural clusters, Work = circuit grid, Projects = radial burst, Principles = vertical pillars, Now = concentric rings, Blog = stacked waves, Terminal = `>_` command silhouette. Floating chapter indicator pill in bottom-left corner crossfades between chapters with icon + label. Uses existing `CHAPTERS`, `triggerMorph()`, and `clearMorph()` infrastructure. IntersectionObserver with `rootMargin: '-30% 0px -30% 0px'`. Mobile hidden (same as section dots).
 
+### 2. 🎯 Ambient hero atmosphere — sonar rings + scroll depth shift
+> **2026-04-18 done** — 3 concentric sonar rings pulse outward from the avatar (staggered 0s/1s/2s, 3s cycle, pure CSS keyframe). On scroll past the hero, `.hero-content` scales to 0.96 + fades to opacity 0.6, and the ambient glow (`::before`) fades to 0.2 — creating a "pushing through" depth shift via IntersectionObserver on a sentinel at `bottom: 40%`.
+
 
 
 ### 2. 🎮 Built-in terminal games (beyond snake)
@@ -31,6 +34,7 @@ A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/C
 ---
 
 ### ✅ Done
+- **2026-04-18** — Ambient hero sonar rings + scroll parallax (3 CSS sonar rings around avatar, IntersectionObserver scroll-depth shift on hero)
 - **2026-04-16** — Scroll-driven particle morphing story (8 chapter shapes, chapter indicator pill, IntersectionObserver)
 - **2026-04-16** — Live GitHub activity ticker (real GitHub events + graceful fallback)
 - **2026-04-15** — Command palette (`Cmd+K` / `Ctrl+K`) — 16 searchable commands across Navigate/Actions/Terminal secrets, arrow-key navigation, spring animation, blurred backdrop, full mobile support, body scroll lock, full ARIA accessibility

@@ -1,3 +1,47 @@
+## 2026-04-18 — Ambient Hero Sonar Rings + Scroll Parallax
+
+### Enhancement
+Two new hero-level effects add atmosphere and depth to the top of the page:
+
+**Part 1 — Ambient sonar rings around the avatar:**
+- 3 concentric rings pulse outward from the avatar in a continuous 3-second cycle
+- Each ring starts at the avatar boundary and expands to ~2.8× scale, fading from `opacity: 0.6` to `0` — creating a sonar ping effect
+- Rings are staggered: Ring 1 at 0s, Ring 2 at 1s delay, Ring 3 at 2s delay — ensuring at least one ring is always visible at any point in the loop
+- Pure CSS keyframe animation (`@keyframes sonar`), no JS — the avatar's float animation continues uninterrupted
+- Rings are absolutely positioned inside the avatar container, centered with `top: 50%; left: 50%; transform: translate(-50%, -50%)`
+- Subtle `box-shadow` glow + inset glow give depth to each ring
+- Light mode uses softer `rgba(108, 99, 255, 0.25)` ring color for reduced contrast on light backgrounds
+
+**Part 2 — Hero scroll parallax (depth shift on scroll):**
+- A sentinel `<div id="hero-sentinel">` is placed inside the hero at `bottom: 40%` of the hero height
+- An `IntersectionObserver` watches the sentinel with `threshold: [0, 0.4, 1]`
+- When the sentinel's `intersectionRatio ≤ 0.4` (i.e., the hero is mostly scrolled out of view), the hero content:
+  - `transform: scale(0.96); opacity: 0.6` — a subtle "pushing through" recess
+  - The ambient glow (`::before`) fades to `opacity: 0.2`
+- When the sentinel is back above 0.6 ratio, everything restores to `scale(1); opacity: 1`
+- Smooth `transition: all 0.4s ease` on `.hero-content` for both enter and exit
+- Creates a "diving deeper into the page" feeling as the hero recedes behind you
+
+### Design details
+- Sonar ring borders: `2px solid rgba(108, 99, 255, 0.4)` (dark mode) / `0.25` (light mode)
+- Ring `border-radius: 50%` ensures perfect circles regardless of parent dimensions
+- Ring size is determined purely by the `scale(2.8)` expansion in the keyframe — no fixed width needed
+- The `::before.hero-glow-fade` selector uses a double-class pattern for specificity: it applies only when the `.hero-glow-fade` class is present on the `.hero` element alongside the `::before` pseudo-element
+- Sentinel is `height: 1px; width: 100%` — invisible but precise for intersection math
+
+### Tradeoffs & Decisions
+- Rings use `animation-delay` on nth-child selectors rather than CSS custom properties — simpler and more performant
+- No separate light-mode CSS rule for `.hero-glow-fade::before` needed — it inherits the reduced opacity from `.hero-glow-fade { opacity: 0.2 }` transition
+- IntersectionObserver threshold `[0, 0.4, 1]` chosen so the transition fires at the right moment: when sentinel crosses 0.4 ratio (40% visible), activate; 0.6 ratio (60% visible on scroll-back), deactivate
+- Sentinel placed as a direct child of `<section class="hero">` (not inside `.hero-content`) so it's positioned relative to the hero section itself, not the content wrapper
+
+### Files changed
+- `index.html` — added 3 `.sonar-ring` divs inside `.avatar`; added `#hero-sentinel` div at bottom of hero section
+- `style.css` — added `.sonar-ring` with `@keyframes sonar` (3s cycle, scale 1→2.8, opacity 0.6→0), staggered `animation-delay` for 3 rings, light-mode softer ring colors; added `.hero-content.parallax-recede` with scale+opacity transition; added `.hero::before.hero-glow-fade` for glow fade
+- `script.js` — added `HeroScrollParallax` IIFE: IntersectionObserver on sentinel, `applyRecede()` toggling `parallax-recede` on `.hero-content` and `hero-glow-fade` on `.hero`
+
+---
+
 ## 2026-04-16 — Scroll-Driven Particle Morphing Story
 
 ### Enhancement

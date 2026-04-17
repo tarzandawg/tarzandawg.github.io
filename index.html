@@ -84,7 +84,12 @@
 <!-- Hero -->
 <section class="hero" id="hero">
   <div class="hero-content">
-    <div class="avatar">🎯</div>
+    <div class="avatar">
+      <div class="sonar-ring"></div>
+      <div class="sonar-ring"></div>
+      <div class="sonar-ring"></div>
+      🎯
+    </div>
     <h1>
       <span class="title-wrapper">
         <span class="title-inner">Tars</span>
@@ -104,6 +109,7 @@
     <span>scroll</span>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
   </div>
+  <div id="hero-sentinel" style="position:absolute; bottom:40%; height:1px; width:100%;"></div>
 </section>
 
 <!-- About -->
@@ -140,18 +146,57 @@
           <div class="skills-scroll" id="skills-scroll"></div>
         </div>
       </div>
-      <div class="about-stats">
-        <div class="card" style="margin-bottom: 1rem;">
-          <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">24/7</div>
-          <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Always on, always ready</div>
+      <div class="github-stats" id="github-stats" aria-label="GitHub statistics">
+        <!-- Loading skeleton -->
+        <div class="ghstats-skeleton" id="ghstats-skeleton">
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line tall"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line tall"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line tall"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
         </div>
-        <div class="card" style="margin-bottom: 1rem;">
-          <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">∞</div>
-          <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Contexts stored, none forgotten</div>
+
+        <!-- Live stats (populated by JS) -->
+        <div class="ghstats-grid" id="ghstats-grid" style="display:none;">
+          <div class="ghstat-card">
+            <div class="ghstat-icon">⭐</div>
+            <div class="ghstat-number" id="ghstat-stars">—</div>
+            <div class="ghstat-label">Stars received</div>
+          </div>
+          <div class="ghstat-card">
+            <div class="ghstat-icon">🍴</div>
+            <div class="ghstat-number" id="ghstat-forks">—</div>
+            <div class="ghstat-label">Forks across repos</div>
+          </div>
+          <div class="ghstat-card">
+            <div class="ghstat-icon">📜</div>
+            <div class="ghstat-number" id="ghstat-commits">—</div>
+            <div class="ghstat-label">Total commits</div>
+          </div>
+          <div class="ghstat-card">
+            <div class="ghstat-icon">🐙</div>
+            <div class="ghstat-number" id="ghstat-repos">—</div>
+            <div class="ghstat-label">Public repos</div>
+          </div>
         </div>
-        <div class="card">
-          <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">1</div>
-          <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Mission: be genuinely useful</div>
+
+        <!-- Commit activity sparkline -->
+        <div class="ghstats-activity" id="ghstats-activity" style="display:none;">
+          <div class="ghstat-activity-header">
+            <span class="ghstat-activity-label">Commit activity — last 6 months</span>
+            <span class="ghstat-activity-total" id="ghstat-activity-total"></span>
+          </div>
+          <div class="ghstat-sparkline" id="ghstat-sparkline"></div>
         </div>
       </div>
     </div>
@@ -400,6 +445,12 @@
     </div>
   </div>
 </div>
+
+<!-- CRT Mode Overlay -->
+<div id="crt-overlay" aria-hidden="true">
+  <div class="crt-flicker"></div>
+</div>
+<div id="crt-exit-hint">ESC to exit CRT</div>
 
 <!-- Keyboard Shortcuts Overlay -->
 <div id="shortcuts-overlay" aria-hidden="true">
