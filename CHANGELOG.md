@@ -42,6 +42,54 @@ Two new hero-level effects add atmosphere and depth to the top of the page:
 
 ---
 
+## 2026-04-17 — Konami Code Easter Egg: CRT Mode
+
+### Enhancement
+Entering the **Konami Code** (`↑↑↓↓←→←→BA`) transforms the entire homepage into a vintage **phosphor-green CRT terminal** — a full retro experience complete with a simulated 1986 boot sequence:
+
+- **Konami Code detection** — `↑↑↓↓←→←→BA` (arrow keys + BA letters), tracked globally via a 2-second rolling window. Works from any section of the page; skips if the user is typing in an input.
+- **CRT scanlines** — horizontal scanline overlay via CSS `repeating-linear-gradient`, 3px pitch, semi-transparent. Always on top of all content (z-index 9000).
+- **Phosphor vignette** — radial gradient darkening the edges of the screen, mimicking a CRT monitor's curved phosphor display.
+- **Subtle flicker animation** — `crt-flicker` div animates brightness micro-variations at 80ms intervals, simulating the characteristic hum of a CRT tube.
+- **Phosphor green glow** — all section titles, labels, and taglines switch to `#b8ffb8` with a green `text-shadow` glow (`0 0 8px rgba(100,255,100,0.7)`).
+- **Chromatic aberration** — `h1/h2/h3` headings get a subtle red/cyan `text-shadow` offset, simulating RGB phosphor misalignment.
+- **Green card tint** — all card elements (projects, blog, stats, clocks, terminal, etc.) get a subtle inset green shadow and border accent, unifying the CRT aesthetic.
+- **Terminal boot sequence** — when CRT mode activates, the terminal section scrolls into view and plays a 19-line typewriter boot sequence over ~3.5 seconds:
+  - `TARS OS v1.9.8  —  (C) 1986 Tars Industries`
+  - BIOS check, 640K RAM memory test
+  - Loading neural core (pattern recognition, language modeling, creative subroutines)
+  - Loading peripheral modules (GitHub sync, world clock, terminal emulator, particle engine)
+  - Establishing connection (quantum gateway, tars@github.io)
+  - `TARS OS loaded. Welcome back, Jason.`
+- **Exit hint** — a floating "ESC to exit CRT" pill appears bottom-right after ~800ms in CRT mode.
+- **Instant exit** — pressing `Escape` while in CRT mode cleanly removes all CRT effects. Works independently of the global "scroll to top" Escape handler.
+
+### How to activate
+1. Press `↑ ↑ ↓ ↓ ← → ← → B A` (↑=ArrowUp, ←=ArrowLeft, etc.) from anywhere on the page
+2. Watch the phosphor bloom wash over the page and the boot sequence play in the terminal
+3. Press `Escape` to return to 2026
+
+### Design details
+- CRT overlay uses `pointer-events: none` so it never blocks clicks on underlying content
+- `aria-hidden="true/false"` toggled on overlay for accessibility when CRT is active
+- Exit hint uses `pointer-events: none` so it doesn't interfere with any interactive elements
+- The Konami listener is installed inside the `ScrollNavigation` IIFE alongside the existing `g`-leader shortcut system
+- Boot sequence typewriter speed: 22ms per character — fast enough to feel like a real machine booting, slow enough to read
+
+### Tradeoffs & Decisions
+- Chose green phosphor (`#33ff33`) over amber — green is the classic "hacker terminal" association and pairs well with the existing purple accent palette
+- CRT mode is intentionally incompatible with the command palette and shortcuts overlay (`?` and `Cmd+K` still work but feel different under the phosphor filter) — this is part of the charm
+- Exit uses Escape rather than a key combo because visitors expect Escape to cancel/exit things
+- No audio (no Web Audio API) — too intrusive and not all users would appreciate a retro beep; the visual effect is strong enough on its own
+- CRT exit is idempotent (calling `exitCRT()` when already exited is a no-op)
+
+### Files changed
+- `index.html` — added `#crt-overlay` div with `.crt-flicker` inner div; added `#crt-exit-hint` element
+- `style.css` — added all `.crt-*` styles: scanlines via `repeating-linear-gradient`, vignette via `radial-gradient`, flicker `@keyframes`, `body.crt-active` overrides for text color/glow, chromatic aberration shadows, green card tint
+- `script.js` — added `window.enterCRT()` / `window.exitCRT()` globals; `Konami Code` listener integrated into `ScrollNavigation` IIFE; `CRTMode` IIFE at end of file with `BOOT_LINES` data, `runBootSequence()`, and `typewriter()` helper
+
+---
+
 ## 2026-04-16 — Scroll-Driven Particle Morphing Story
 
 ### Enhancement

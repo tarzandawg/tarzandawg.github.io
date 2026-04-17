@@ -4138,3 +4138,121 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   });
 })();
 
+// ─── CRT Mode (Konami Code Easter Egg) ──────────────────────────────────────
+(function () {
+  // Boot sequence lines shown in terminal when CRT mode activates
+  const BOOT_LINES = [
+    { text: 'TARS OS v1.9.8  —  (C) 1986 Tars Industries', delay: 0 },
+    { text: '─────────────────────────────────────────────', delay: 120 },
+    { text: 'BIOS check................OK', delay: 250 },
+    { text: 'Memory test:  640K RAM  ................  OK', delay: 380 },
+    { text: 'Loading neural core..........', delay: 520, typing: true },
+    { text: '  ↳ Pattern recognition.............. OK', delay: 820 },
+    { text: '  ↳ Language modeling................ OK', delay: 980 },
+    { text: '  ↳ Creative subroutines............. OK', delay: 1140 },
+    { text: 'Loading peripheral modules..........', delay: 1300, typing: true },
+    { text: '  ↳ GitHub sync...................... OK', delay: 1580 },
+    { text: '  ↳ World clock driver.............. OK', delay: 1720 },
+    { text: '  ↳ Terminal emulator................ OK', delay: 1860 },
+    { text: '  ↳ Particle engine.................. OK', delay: 2000 },
+    { text: 'Establishing connection..............', delay: 2180, typing: true },
+    { text: '  ↳ quantum.gateway/tars............. OK', delay: 2520 },
+    { text: '  ↳ tars@tarzandawg.github.io........ OK', delay: 2660 },
+    { text: '', delay: 2800 },
+    { text: 'TARS OS loaded. Welcome back, Jason.', delay: 2950 },
+    { text: 'Press ESC at any time to return to 2026.', delay: 3300 },
+  ];
+
+  let crtActive = false;
+  let hintTimer = null;
+
+  // ── Enter CRT Mode ───────────────────────────────────────────────────────
+  window.enterCRT = function () {
+    if (crtActive) return;
+    crtActive = true;
+    document.body.classList.add('crt-active');
+    document.getElementById('crt-overlay').setAttribute('aria-hidden', 'false');
+
+    // Show exit hint after a moment
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      const hint = document.getElementById('crt-exit-hint');
+      if (hint) hint.classList.add('visible');
+    }, 800);
+
+    // Scroll to terminal and fire the boot sequence
+    const termEl = document.getElementById('terminal');
+    if (termEl) termEl.scrollIntoView({ behavior: 'smooth' });
+
+    setTimeout(() => {
+      runBootSequence();
+    }, 700);
+  };
+
+  // ── Exit CRT Mode ────────────────────────────────────────────────────────
+  window.exitCRT = function () {
+    if (!crtActive) return;
+    crtActive = false;
+    document.body.classList.remove('crt-active');
+    document.getElementById('crt-overlay').setAttribute('aria-hidden', 'true');
+
+    const hint = document.getElementById('crt-exit-hint');
+    if (hint) hint.classList.remove('visible');
+    clearTimeout(hintTimer);
+  };
+
+  // ── Boot sequence in terminal ────────────────────────────────────────────
+  function runBootSequence() {
+    const output = document.getElementById('terminal-output');
+    if (!output) return;
+
+    // Inject a styled boot block into the terminal
+    const bootDiv = document.createElement('div');
+    bootDiv.className = 'terminal-boot';
+    bootDiv.style.cssText = 'margin-bottom: 1rem; border-left: 2px solid #33ff33; padding-left: 0.75rem;';
+    output.appendChild(bootDiv);
+
+    BOOT_LINES.forEach(({ text, delay, typing }) => {
+      setTimeout(() => {
+        if (!crtActive) return; // cancelled if user exited
+        const line = document.createElement('div');
+        line.className = 'crt-boot';
+        line.style.cssText = 'color: #33ff33; font-family: "JetBrains Mono", monospace; font-size: 0.78rem; line-height: 1.5; text-shadow: 0 0 6px #33ff33;';
+
+        if (typing && text) {
+          // Typewriter effect for module headers
+          line.textContent = '';
+          bootDiv.appendChild(line);
+          typewriter(line, text, 22);
+        } else if (text) {
+          line.textContent = text;
+          bootDiv.appendChild(line);
+        } else {
+          // Blank line
+          const blank = document.createElement('div');
+          blank.style.cssText = 'height: 0.6rem;';
+          bootDiv.appendChild(blank);
+        }
+
+        // Auto-scroll terminal
+        const termBody = document.getElementById('terminal-body');
+        if (termBody) termBody.scrollTop = termBody.scrollHeight;
+      }, delay);
+    });
+  }
+
+  // Typewriter helper
+  function typewriter(el, text, speed) {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, speed);
+  }
+})();
+
+
