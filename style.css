@@ -2033,6 +2033,139 @@ body.cursor-active textarea {
   transform: translateY(0) scale(0.95);
 }
 
+/* ─── Mic Visualizer Toggle ─────────────────────────────────────────────── */
+.mic-toggle {
+  position: fixed;
+  bottom: 6.5rem;
+  right: 1.75rem;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+  position: fixed;
+  bottom: 6.5rem;
+}
+
+.mic-toggle:hover {
+  border-color: #ef4444;
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.25);
+}
+
+.mic-toggle:active {
+  transform: scale(0.95);
+}
+
+.mic-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  transition: color 0.3s, opacity 0.3s, transform 0.3s;
+  position: absolute;
+}
+
+.mic-icon-off {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.mic-icon-on {
+  opacity: 0;
+  transform: scale(0.5) rotate(-20deg);
+  color: #ef4444;
+}
+
+/* Recording state */
+.mic-toggle.recording {
+  border-color: #ef4444;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), 0 0 0 0 rgba(239, 68, 68, 0);
+  animation: micPulse 2s ease-in-out infinite;
+}
+
+.mic-toggle.recording .mic-icon-off {
+  opacity: 0;
+  transform: scale(0.5) rotate(20deg);
+}
+
+.mic-toggle.recording .mic-icon-on {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Red recording dot */
+.mic-rec-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mic-toggle.recording .mic-rec-dot {
+  opacity: 1;
+  transform: scale(1);
+  animation: recDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), 0 0 0 0 rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+@keyframes recDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.75); }
+}
+
+/* ─── Audio Visualizer Canvas ────────────────────────────────────────────── */
+#audioviz-canvas {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#audioviz-canvas.active {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .mic-toggle {
+    bottom: 5.5rem;
+    right: 1.25rem;
+    width: 40px;
+    height: 40px;
+  }
+
+  .mic-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  #audioviz-canvas {
+    height: 80px;
+  }
+}
+
 /* ─── Mobile: hide side nav (too cramped) ─────────────────────────────────── */
 @media (max-width: 768px) {
   #section-nav {
@@ -2742,5 +2875,198 @@ body.crt-active .terminal-output .crt-boot {
 
 #crt-exit-hint.visible {
   opacity: 1;
+}
+
+/* ─── Tech Stack Diagram ──────────────────────────────────────────────────── */
+
+#stack {
+  overflow: hidden;
+}
+
+.stack-diagram {
+  position: relative;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.stack-diagram:hover {
+  border-color: var(--accent);
+}
+
+#stack-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Tech node cards (rendered as SVG foreignObjects) */
+.stack-node {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.stack-node:hover .node-card {
+  filter: brightness(1.2);
+}
+
+.node-card {
+  transition: filter 0.2s ease;
+}
+
+/* Path drawing animation */
+.stack-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawPath 1.5s ease forwards;
+}
+
+@keyframes drawPath {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Flowing particle */
+.stack-particle {
+  opacity: 0;
+  animation: particlePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes particlePulse {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Node label */
+.node-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  fill: var(--text);
+  text-anchor: middle;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.node-sublabel {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Hover tooltip */
+.stack-tooltip {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+}
+
+.stack-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stack-tooltip-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 20px var(--accent-glow);
+  white-space: nowrap;
+}
+
+.stack-tooltip-icon {
+  font-size: 1.1rem;
+}
+
+.stack-tooltip-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.stack-tooltip-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border);
+  padding-left: 0.5rem;
+  margin-left: 0.25rem;
+}
+
+/* Stack legend */
+.stack-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.stack-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.stack-legend-item:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.stack-legend-icon {
+  font-size: 0.9rem;
+}
+
+/* Node entrance animation */
+.stack-node {
+  opacity: 0;
+  animation: nodeEnter 0.6s ease forwards;
+}
+
+@keyframes nodeEnter {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Mobile: hide on small screens */
+@media (max-width: 768px) {
+  #stack-svg {
+    display: none;
+  }
+
+  .stack-diagram {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+  }
+
+  .stack-diagram::after {
+    content: 'Tech diagram — view on desktop for the full experience';
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 2rem;
+  }
 }
 

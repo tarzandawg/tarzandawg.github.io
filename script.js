@@ -3783,6 +3783,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'r': '#principles',
         'n': '#now',
         't': '#terminal',
+        's': '#stack',
         'c': '#contact',
       };
       const target = scrollMap[e.key];
@@ -3871,6 +3872,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         { icon: '🌍', name: 'Go to Now',           desc: 'Live status dashboard', shortcut: ['G', 'N'], action: () => scrollTo('#now') },
         { icon: '📝', name: 'Go to Blog',          desc: 'Recent thoughts',      shortcut: ['G', 'B'], action: () => scrollTo('#blog') },
         { icon: '💻', name: 'Go to Terminal',      desc: 'Interactive terminal',  shortcut: ['G', 'T'], action: () => scrollTo('#terminal') },
+        { icon: '🏗️', name: 'Go to Stack',         desc: 'Tech architecture diagram', shortcut: ['G', 'S'], action: () => scrollTo('#stack') },
         { icon: '✉',  name: 'Go to Contact',      desc: 'Find me around the web',shortcut: ['G', 'C'], action: () => scrollTo('#contact') },
       ]
     },
@@ -4256,3 +4258,597 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 })();
 
 
+/* ─── Tech Stack Architecture Diagram ─────────────────────────────────────── */
+(function () {
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // Tech nodes: id, label, sublabel, icon, x%, y%, description
+  // Positions in SVG viewBox (0–1 normalized, then * 900 or * 500)
+  // Layout: GitHub Pages at top, branching down to HTML/CSS/JS core, then specialized systems
+  const NODES = [
+    {
+      id: 'github-pages',
+      label: 'GitHub Pages',
+      sublabel: 'Hosting',
+      icon: '🐙',
+      x: 0.50, y: 0.08,
+      desc: 'Free static hosting, CDN-backed delivery'
+    },
+    {
+      id: 'html5',
+      label: 'HTML5',
+      sublabel: 'Structure',
+      icon: '📄',
+      x: 0.20, y: 0.22,
+      desc: 'Semantic markup, accessibility tree'
+    },
+    {
+      id: 'css3',
+      label: 'CSS3',
+      sublabel: 'Presentation',
+      icon: '🎨',
+      x: 0.80, y: 0.22,
+      desc: 'Custom properties, animations, grid & flexbox'
+    },
+    {
+      id: 'vanilla-js',
+      label: 'Vanilla JS',
+      sublabel: 'Logic',
+      icon: '⚡',
+      x: 0.50, y: 0.36,
+      desc: 'No framework — raw DOM APIs & ES2022+'
+    },
+    {
+      id: 'canvas-api',
+      label: 'Canvas API',
+      sublabel: 'Particles',
+      icon: '✨',
+      x: 0.15, y: 0.52,
+      desc: '60fps particle constellation & skill graph'
+    },
+    {
+      id: 'intersection-observer',
+      label: 'IntersectionObserver',
+      sublabel: 'Reactivity',
+      icon: '👁️',
+      x: 0.38, y: 0.52,
+      desc: 'Scroll-driven animations, zero scroll listeners'
+    },
+    {
+      id: 'terminal-emulator',
+      label: 'Terminal Emulator',
+      sublabel: 'Interactive',
+      icon: '⌨️',
+      x: 0.62, y: 0.52,
+      desc: 'Virtual filesystem, command parser, 12+ commands'
+    },
+    {
+      id: 'local-storage',
+      label: 'localStorage',
+      sublabel: 'Persistence',
+      icon: '💾',
+      x: 0.85, y: 0.52,
+      desc: 'Theme preference, command history, game state'
+    },
+    {
+      id: 'command-palette',
+      label: 'Command Palette',
+      sublabel: 'Navigation',
+      icon: '🔍',
+      x: 0.22, y: 0.70,
+      desc: 'Cmd+K / Ctrl+K fuzzy search, 16 commands'
+    },
+    {
+      id: 'particle-engine',
+      label: 'Particle Engine',
+      sublabel: 'Visuals',
+      icon: '🌌',
+      x: 0.44, y: 0.70,
+      desc: 'Mouse-driven, shape morphing, chapter transitions'
+    },
+    {
+      id: 'scroll-nav',
+      label: 'Scroll System',
+      sublabel: 'Navigation',
+      icon: '🧭',
+      x: 0.66, y: 0.70,
+      desc: 'Progress bar, section dots, keyboard shortcuts'
+    },
+    {
+      id: 'crt-mode',
+      label: 'CRT Mode',
+      sublabel: 'Easter Egg',
+      icon: '📺',
+      x: 0.88, y: 0.70,
+      desc: 'Konami Code activates phosphor-green retro mode'
+    },
+  ];
+
+  // Connections: [fromId, toId] — arrows flow top-to-bottom in the architecture
+  const CONNECTIONS = [
+    // GitHub Pages → foundation
+    ['github-pages', 'html5'],
+    ['github-pages', 'css3'],
+    // HTML → JS
+    ['html5', 'vanilla-js'],
+    // JS core → capabilities
+    ['vanilla-js', 'canvas-api'],
+    ['vanilla-js', 'intersection-observer'],
+    ['vanilla-js', 'terminal-emulator'],
+    ['vanilla-js', 'command-palette'],
+    ['vanilla-js', 'local-storage'],
+    // Capabilities → advanced features
+    ['canvas-api', 'particle-engine'],
+    ['intersection-observer', 'scroll-nav'],
+    ['command-palette', 'scroll-nav'],
+    ['local-storage', 'scroll-nav'],
+    ['local-storage', 'terminal-emulator'],
+    // Terminal → easter egg
+    ['terminal-emulator', 'crt-mode'],
+  ];
+
+  // SVG dimensions (viewBox)
+  const W = 900, H = 500;
+  const CARD_W = 120, CARD_H = 44;
+
+  function svgEl(tag, attrs) {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+
+  function getPos(node) {
+    return {
+      x: node.x * W,
+      y: node.y * H,
+      xMid: node.x * W + CARD_W / 2,
+      yMid: node.y * H + CARD_H / 2,
+    };
+  }
+
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function initStackDiagram() {
+    const svg = document.getElementById('stack-svg');
+    const pathsGroup = document.getElementById('stack-paths');
+    const particlesGroup = document.getElementById('stack-particles');
+    const nodesGroup = document.getElementById('stack-nodes');
+    const diagram = document.getElementById('stack-diagram');
+    const tooltip = document.getElementById('stack-tooltip');
+    const legend = document.getElementById('stack-legend');
+
+    if (!svg) return;
+
+    // Clear any existing content
+    pathsGroup.innerHTML = '';
+    particlesGroup.innerHTML = '';
+    nodesGroup.innerHTML = '';
+
+    const nodeMap = {};
+    const nodeEls = {};
+
+    // ── Draw paths ──────────────────────────────────────────────────────────
+    CONNECTIONS.forEach(([fromId, toId], i) => {
+      const from = NODES.find(n => n.id === fromId);
+      const to = NODES.find(n => n.id === toId);
+      if (!from || !to) return;
+
+      const fp = getPos(from);
+      const tp = getPos(to);
+
+      // Compute midpoint with slight curve
+      const midX = (fp.xMid + tp.xMid) / 2;
+      const midY = (fp.yMid + tp.yMid) / 2;
+      const dx = tp.xMid - fp.xMid;
+      const dy = tp.yMid - fp.yMid;
+      // Perpendicular offset for curve
+      const len = Math.sqrt(dx * dx + dy * dy);
+      const curveR = Math.min(40, len * 0.15);
+      const cx = midX - (dy / len) * curveR * (i % 2 === 0 ? 1 : -1);
+      const cy = midY + (dx / len) * curveR * (i % 2 === 0 ? 1 : -1);
+
+      const d = `M ${fp.xMid} ${fp.yMid} Q ${cx} ${cy} ${tp.xMid} ${tp.yMid}`;
+
+      const path = svgEl('path', {
+        d,
+        fill: 'none',
+        stroke: hexToRgba('#6c63ff', 0.35),
+        'stroke-width': '1.5',
+        class: 'stack-path',
+        'stroke-dashoffset': '1000',
+        'stroke-dasharray': '1000',
+        style: `animation-delay: ${i * 0.08}s`,
+      });
+      pathsGroup.appendChild(path);
+    });
+
+    // ── Draw nodes ─────────────────────────────────────────────────────────
+    NODES.forEach((node, i) => {
+      const pos = getPos(node);
+      nodeMap[node.id] = pos;
+
+      const g = svgEl('g', {
+        class: 'stack-node',
+        'data-id': node.id,
+        transform: `translate(${pos.x}, ${pos.y})`,
+        style: `animation-delay: ${0.3 + i * 0.06}s`,
+      });
+
+      // Card background
+      const card = svgEl('rect', {
+        width: CARD_W,
+        height: CARD_H,
+        rx: '10',
+        class: 'node-card',
+        fill: 'var(--bg-card)',
+        stroke: 'var(--border)',
+        'stroke-width': '1',
+        filter: 'url(#soft-glow)',
+      });
+
+      // Icon
+      const icon = svgEl('text', {
+        x: '18',
+        y: '28',
+        'font-size': '18',
+        'dominant-baseline': 'middle',
+      });
+      icon.textContent = node.icon;
+
+      // Label
+      const label = svgEl('text', {
+        x: '40',
+        y: '20',
+        class: 'node-label',
+      });
+      label.textContent = node.label;
+
+      // Sublabel
+      const sublabel = svgEl('text', {
+        x: '40',
+        y: '34',
+        class: 'node-sublabel',
+      });
+      sublabel.textContent = node.sublabel;
+
+      // Dot indicator (right side)
+      const dot = svgEl('circle', {
+        cx: CARD_W - 12,
+        cy: CARD_H / 2,
+        r: '3',
+        fill: 'var(--accent)',
+        opacity: '0.7',
+      });
+
+      g.appendChild(card);
+      g.appendChild(icon);
+      g.appendChild(label);
+      g.appendChild(sublabel);
+      g.appendChild(dot);
+      nodesGroup.appendChild(g);
+      nodeEls[node.id] = g;
+
+      // Mouse interaction
+      g.addEventListener('mouseenter', () => showTooltip(node));
+      g.addEventListener('mouseleave', hideTooltip);
+      g.addEventListener('mousemove', moveTooltip);
+    });
+
+    // ── Flowing particles along paths ─────────────────────────────────────
+    function spawnParticles() {
+      CONNECTIONS.forEach(([fromId, toId], idx) => {
+        const from = NODES.find(n => n.id === fromId);
+        const to = NODES.find(n => n.id === toId);
+        if (!from || !to) return;
+
+        const fp = getPos(from);
+        const tp = getPos(to);
+
+        // Create 2 particles per path, staggered
+        [0, 1].forEach((pIdx) => {
+          const particle = svgEl('circle', {
+            r: '3.5',
+            fill: 'url(#particle-grad)',
+            filter: 'url(#glow)',
+            class: 'stack-particle',
+          });
+          particlesGroup.appendChild(particle);
+
+          const dur = 2.2 + Math.random() * 0.8;
+          const delay = idx * 0.18 + pIdx * (dur / 2);
+
+          function animateParticle() {
+            const startTime = performance.now() + delay * 1000;
+            let lastTime = startTime;
+
+            function frame(now) {
+              let t = (now - startTime) / 1000;
+              t = ((t % dur) + dur) % dur;
+              const progress = t / dur;
+
+              // Quadratic bezier
+              const midX = (fp.xMid + tp.xMid) / 2;
+              const midY = (fp.yMid + tp.yMid) / 2;
+              const dx = tp.xMid - fp.xMid;
+              const dy = tp.yMid - fp.yMid;
+              const len = Math.sqrt(dx * dx + dy * dy);
+              const curveR = Math.min(40, len * 0.15);
+              const cx = midX - (dy / len) * curveR * (idx % 2 === 0 ? 1 : -1);
+              const cy = midY + (dx / len) * curveR * (idx % 2 === 0 ? 1 : -1);
+
+              // Quadratic bezier formula
+              const t1 = 1 - progress;
+              const px = t1 * t1 * fp.xMid + 2 * t1 * progress * cx + progress * progress * tp.xMid;
+              const py = t1 * t1 * fp.yMid + 2 * t1 * progress * cy + progress * progress * tp.yMid;
+
+              particle.setAttribute('cx', px);
+              particle.setAttribute('cy', py);
+
+              requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+          }
+          animateParticle();
+        });
+      });
+    }
+
+    spawnParticles();
+
+    // ── Tooltip helpers ─────────────────────────────────────────────────────
+    function showTooltip(node) {
+      document.getElementById('stt-icon').textContent = node.icon;
+      document.getElementById('stt-name').textContent = node.label;
+      document.getElementById('stt-desc').textContent = node.desc;
+      tooltip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function moveTooltip(e) {
+      const rect = diagram.getBoundingClientRect();
+      let tx = e.clientX - rect.left + 14;
+      let ty = e.clientY - rect.top - 40;
+      // Keep tooltip inside bounds
+      const ttW = 300;
+      if (tx + ttW > rect.width) tx = e.clientX - rect.left - ttW - 14;
+      tooltip.style.left = tx + 'px';
+      tooltip.style.top = ty + 'px';
+    }
+
+    // ── Legend ─────────────────────────────────────────────────────────────
+    const categories = ['Hosting', 'Core', 'Visuals', 'Interactive', 'System'];
+    const catIcons = { 'Hosting': '🐙', 'Core': '⚡', 'Visuals': '✨', 'Interactive': '⌨️', 'System': '💾' };
+
+    // Group nodes by rough category for legend
+    const LEGEND_ITEMS = [
+      { icon: '🐙', label: 'GitHub Pages — Free hosting' },
+      { icon: '📄', label: 'HTML5 — Semantic structure' },
+      { icon: '🎨', label: 'CSS3 — Animations & theming' },
+      { icon: '⚡', label: 'Vanilla JS — Zero dependencies' },
+      { icon: '✨', label: 'Canvas API — Particles & graphs' },
+      { icon: '👁️', label: 'IntersectionObserver — Scroll reactivity' },
+      { icon: '⌨️', label: 'Terminal emulator — 12 commands' },
+      { icon: '💾', label: 'localStorage — Preferences' },
+      { icon: '🔍', label: 'Command palette — Cmd+K' },
+      { icon: '🌌', label: 'Particle engine — 60fps canvas' },
+      { icon: '🧭', label: 'Scroll navigation — Keyboard shortcuts' },
+      { icon: '📺', label: 'CRT mode — Konami code easter egg' },
+    ];
+
+    LEGEND_ITEMS.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'stack-legend-item';
+      el.innerHTML = `<span class="stack-legend-icon">${item.icon}</span><span>${item.label}</span>`;
+      legend.appendChild(el);
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStackDiagram);
+  } else {
+    initStackDiagram();
+  }
+})();
+
+
+
+
+// ─── Live Audio Visualizer ─────────────────────────────────────────────────────
+// Floating mic toggle: requests microphone, renders real-time frequency bars
+// across the bottom of the screen using Web Audio API + Canvas 2D.
+
+(function () {
+  const micBtn   = document.getElementById('mic-toggle');
+  const canvas   = document.getElementById('audioviz-canvas');
+  if (!micBtn || !canvas) return;
+
+  const ctx2d = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  let audioCtx = null;
+  let analyser = null;
+  let dataArray = null;
+  let animId = null;
+  let isActive = false;
+
+  // Track current "active" chapter for canvas tinting
+  const isDarkMode = () => !document.body.classList.contains('light-mode');
+
+  function resizeCanvas() {
+    const w = window.innerWidth;
+    canvas.width = w * dpr;
+    canvas.height = (isMobile() ? 80 : 120) * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = (isMobile() ? 80 : 120) + 'px';
+    ctx2d.scale(dpr, dpr);
+  }
+
+  function isMobile() {
+    return window.innerWidth <= 640;
+  }
+
+  // Draw the visualizer — called every animation frame
+  function draw() {
+    if (!analyser || !dataArray) return;
+
+    analyser.getByteFrequencyData(dataArray);
+
+    const w = window.innerWidth;
+    const h = isMobile() ? 80 : 120;
+    const isDark = isDarkMode();
+
+    ctx2d.clearRect(0, 0, w, h);
+
+    // Number of bars — fewer on mobile
+    const numBars = isMobile() ? 48 : 80;
+    const barGap = 2;
+    const barW = (w - numBars * barGap) / numBars;
+    const maxHeight = h - 8;
+    const step = Math.floor(dataArray.length / numBars);
+
+    for (let i = 0; i < numBars; i++) {
+      // Average the frequency bin range for this bar
+      let sum = 0;
+      for (let j = 0; j < step; j++) {
+        sum += dataArray[i * step + j];
+      }
+      const val = sum / step;
+      const barHeight = Math.max(3, (val / 255) * maxHeight);
+      const x = i * (barW + barGap);
+      const y = h - barHeight;
+
+      // Gradient from accent to slightly brighter purple at top of bar
+      const grad = ctx2d.createLinearGradient(x, y, x, y + barHeight);
+      if (isDark) {
+        grad.addColorStop(0, 'rgba(167, 139, 250, 0.95)');
+        grad.addColorStop(0.4, 'rgba(108, 99, 255, 0.9)');
+        grad.addColorStop(1, 'rgba(108, 99, 255, 0.3)');
+      } else {
+        grad.addColorStop(0, 'rgba(109, 99, 255, 0.8)');
+        grad.addColorStop(0.4, 'rgba(109, 99, 255, 0.65)');
+        grad.addColorStop(1, 'rgba(109, 99, 255, 0.2)');
+      }
+
+      // Draw bar with rounded top
+      ctx2d.beginPath();
+      const radius = Math.min(barW / 2, 3);
+      ctx2d.roundRect(x, y, barW, barHeight, [radius, radius, 0, 0]);
+      ctx2d.fillStyle = grad;
+      ctx2d.fill();
+
+      // Subtle glow under each bar
+      if (val > 60) {
+        ctx2d.shadowColor = isDark ? 'rgba(108, 99, 255, 0.4)' : 'rgba(108, 99, 255, 0.25)';
+        ctx2d.shadowBlur = 4;
+        ctx2d.fill();
+        ctx2d.shadowBlur = 0;
+      }
+    }
+
+    // Fade to bottom — soft vignette
+    const fadeGrad = ctx2d.createLinearGradient(0, h - 20, 0, h);
+    fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    fadeGrad.addColorStop(1, isDark ? 'rgba(10,10,15,0.7)' : 'rgba(245,244,249,0.7)');
+    ctx2d.fillStyle = fadeGrad;
+    ctx2d.fillRect(0, 0, w, h);
+
+    if (isActive) {
+      animId = requestAnimationFrame(draw);
+    }
+  }
+
+  // Start the visualizer
+  async function start() {
+    if (isActive) return;
+
+    // Check browser support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Microphone access is not supported in this browser.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.8;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      isActive = true;
+      micBtn.classList.add('recording');
+      canvas.classList.add('active');
+
+      resizeCanvas();
+      draw();
+
+    } catch (err) {
+      // Permission denied or other error
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        alert('Microphone access was denied. Please allow microphone access in your browser settings to use the visualizer.');
+      } else {
+        alert('Could not access microphone: ' + err.message);
+      }
+    }
+  }
+
+  // Stop the visualizer
+  function stop() {
+    if (!isActive) return;
+    isActive = false;
+
+    cancelAnimationFrame(animId);
+    animId = null;
+
+    canvas.classList.remove('active');
+    micBtn.classList.remove('recording');
+
+    // Clear canvas
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Release audio resources
+    if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
+    }
+    analyser = null;
+    dataArray = null;
+  }
+
+  // Toggle handler
+  micBtn.addEventListener('click', () => {
+    if (isActive) {
+      stop();
+    } else {
+      start();
+    }
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    if (isActive) {
+      resizeCanvas();
+    }
+  });
+
+  // Stop on page hide (tab switch, close)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && isActive) {
+      stop();
+    }
+  });
+})();

@@ -1,3 +1,51 @@
+## 2026-04-19 — Animated Tech Stack Architecture Diagram
+
+### Enhancement
+A brand-new **"How This Site Works"** section visualizes Tars's homepage as a live, animated SVG architecture diagram — showing how every piece of the site connects, from GitHub Pages down to the CRT Mode easter egg.
+
+**12 tech nodes** positioned in a clear top-to-bottom hierarchy:
+- **Foundation layer** — GitHub Pages (hosting), HTML5 (structure), CSS3 (presentation)
+- **Core layer** — Vanilla JS (logic, zero dependencies)
+- **Capability layer** — Canvas API (particles), IntersectionObserver (scroll reactivity), Terminal Emulator (interactive), Command Palette (navigation), localStorage (persistence)
+- **Feature layer** — Particle Engine (canvas-based visuals), Scroll System (nav dots, progress, shortcuts), CRT Mode (Konami Code easter egg)
+
+**14 curved SVG connection paths** with animated dashed-line draw-on effect — staggered 80ms apart so paths trace themselves one by one on page load.
+
+**34 flowing particles** — 2 per connection, glowing white-to-purple dots that travel continuously along each bezier path using `requestAnimationFrame`, each with randomized speed (2.2–3s) and staggered start offsets.
+
+**Interactive node tooltips** — hover any node card to see a tooltip with the tech's icon, name, and one-line description. Tooltip follows the cursor and stays within diagram bounds.
+
+**Node entrance animations** — nodes scale+fade in with staggered delays (60ms apart) after the paths have started drawing, creating a choreographed reveal.
+
+**Scroll-triggered activation** — the diagram only initializes when the `#stack` section enters the viewport (via IntersectionObserver), so the animation is always fresh when first seen.
+
+**Dot-grid SVG background pattern** — subtle dot matrix behind the diagram for depth.
+
+**Legend strip** — 12 pill badges below the diagram summarizing every tech, hoverable with accent border.
+
+**Navigation integration:**
+- New nav dot for "Stack" in the section dot navigation (right edge)
+- `g s` keyboard shortcut to jump directly to the Stack section
+- "Go to Stack" command added to the `Cmd+K` / `Ctrl+K` command palette
+- Keyboard shortcuts overlay (press `?`) updated with `g s → Stack`
+
+### Design details
+- SVG viewBox `900×500`, responsive via `preserveAspectRatio="xMidYMid meet"` and `width: 100%`
+- Tech cards: `120×44px` rounded rects with icon (emoji), label, sublabel, and accent dot
+- Path curves: quadratic bezier with perpendicular midpoint offset alternating direction per connection
+- Particle glow: radial gradient fill (`#fff` → accent purple) + SVG `feGaussianBlur` filter
+- CSS `stroke-dashoffset` animation for path draw-on: 1.5s ease forwards with staggered `animation-delay`
+- `IntersectionObserver` with `rootMargin: '-20% 0px -20% 0px'` triggers initialization when section is 60%+ visible
+- All SVG text uses `pointer-events: none` so mouse events pass through to the `<g>` parent
+- Mobile (< 768px): SVG hidden, diagram shows a graceful "view on desktop" message instead
+
+### Files changed
+- `index.html` — added `#stack` section with inline SVG (defs, grid, paths, particles, nodes groups + tooltip div + legend div); added nav dot for "stack"; added `g s` shortcut row in keyboard shortcuts overlay
+- `style.css` — added `.stack-diagram`, `#stack-svg`, `.stack-path` (draw-on animation), `.stack-particle` (pulsing glow), `.node-label/.node-sublabel`, `.stack-tooltip` (floating card with icon/name/desc), `.stack-legend` + `.stack-legend-item`, `.stack-node` entrance animation, mobile breakpoint hiding the SVG
+- `script.js` — added `TechStackDiagram` IIFE: `NODES` array (12 techs with positions, descriptions), `CONNECTIONS` array (14 top-to-bottom architecture links), `getPos()` helper, `svgEl()` helper, `hexToRgba()` helper, `initStackDiagram()` (builds SVG paths + nodes + particles via DOM, attaches IntersectionObserver for lazy init, tooltip event handlers), 2 `requestAnimationFrame` particle animators per connection; added `g s → #stack` to `scrollMap` in `ScrollNavigation`; added "Go to Stack" `{icon:'🏗️', shortcut:['G','S']}` to command palette `Navigate` group
+
+---
+
 ## 2026-04-18 — Ambient Hero Sonar Rings + Scroll Parallax
 
 ### Enhancement

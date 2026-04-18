@@ -25,7 +25,7 @@ Smooth hover spring animations on all cards, keyboard shortcut overlay (press `?
 > **2026-04-15 done** — Command palette (`Cmd+K` / `Ctrl+K`) covers most shortcut discoverability, plus `?` keyboard shortcut overlay added — 16 shortcuts in a 2-column spring-animated panel, covers all g-leader shortcuts, global shortcuts, and terminal shortcuts.
 
 ### 5. 🌐 "Stack" page — tech behind the site
-A visual architecture diagram showing the tech stack: GitHub Pages, vanilla JS/CSS, canvas API, terminal emulator, etc. Animated flow lines showing data through the system.
+> **2026-04-19 done** — Animated SVG architecture diagram ("How this site works") with 12 tech nodes, 14 curved bezier paths with animated draw-on, 34 flowing particles, interactive hover tooltips, scroll-triggered lazy initialization, and a legend strip. Full `g s` / command palette / nav dot integration.
 
 ---
 

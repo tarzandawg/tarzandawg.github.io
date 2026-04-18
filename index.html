@@ -54,6 +54,9 @@
   <div class="section-dot" data-section="terminal" title="Terminal">
     <span class="dot-tooltip">Terminal</span>
   </div>
+  <div class="section-dot" data-section="stack" title="Stack">
+    <span class="dot-tooltip">Stack</span>
+  </div>
 </nav>
 
 <!-- Back to top button -->
@@ -62,6 +65,26 @@
     <polyline points="18 15 12 9 6 15"/>
   </svg>
 </button>
+
+<!-- Mic visualizer toggle (fixed bottom-right, above back-to-top) -->
+<button class="mic-toggle" id="mic-toggle" aria-label="Toggle audio visualizer" title="Toggle audio visualizer">
+  <svg class="mic-icon mic-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>
+  <svg class="mic-icon mic-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>
+  <span class="mic-rec-dot"></span>
+</button>
+
+<!-- Audio visualizer overlay canvas -->
+<canvas id="audioviz-canvas" aria-hidden="true"></canvas>
 
 <!-- Theme toggle (fixed top-right) -->
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Switch theme">
@@ -394,6 +417,73 @@
   </div>
 </section>
 
+<!-- Tech Stack -->
+<section id="stack">
+  <div class="container">
+    <p class="section-label">Under the hood</p>
+    <h2 class="section-title">How this site works</h2>
+    <div class="stack-diagram" id="stack-diagram" aria-label="Tech stack architecture diagram">
+      <svg id="stack-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- Glow filter -->
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- Soft glow -->
+          <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- Arrow marker -->
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)" opacity="0.7"/>
+          </marker>
+          <!-- Gradient for particles -->
+          <radialGradient id="particle-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.6"/>
+          </radialGradient>
+          <!-- Clip for diagram -->
+          <clipPath id="diagram-clip">
+            <rect x="0" y="0" width="900" height="500" rx="16"/>
+          </clipPath>
+        </defs>
+
+        <!-- Grid background dots -->
+        <g class="stack-grid" opacity="0.15">
+          <pattern id="grid-dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="var(--accent)"/>
+          </pattern>
+          <rect x="0" y="0" width="900" height="500" fill="url(#grid-dots)" clip-path="url(#diagram-clip)"/>
+        </g>
+
+        <!-- Connection paths (drawn by JS) -->
+        <g id="stack-paths" filter="url(#glow)"></g>
+
+        <!-- Flowing particles along paths -->
+        <g id="stack-particles"></g>
+
+        <!-- Tech nodes (positioned by JS) -->
+        <g id="stack-nodes"></g>
+      </svg>
+
+      <!-- Hover tooltip -->
+      <div class="stack-tooltip" id="stack-tooltip" aria-hidden="true">
+        <div class="stack-tooltip-inner">
+          <span class="stack-tooltip-icon" id="stt-icon"></span>
+          <span class="stack-tooltip-name" id="stt-name"></span>
+          <span class="stack-tooltip-desc" id="stt-desc"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack-legend" id="stack-legend">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
 <!-- Contact -->
 <section id="contact" style="background: var(--bg-card); border-top: 1px solid var(--border);">
   <div class="container">
@@ -498,6 +588,10 @@
             <div class="shortcut-row">
               <span class="shortcut-desc">Go to Terminal</span>
               <div class="shortcut-keys"><kbd>g</kbd><kbd>t</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Go to Stack</span>
+              <div class="shortcut-keys"><kbd>g</kbd><kbd>s</kbd></div>
             </div>
             <div class="shortcut-row">
               <span class="shortcut-desc">Go to Contact</span>
