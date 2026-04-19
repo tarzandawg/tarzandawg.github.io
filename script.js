@@ -473,6 +473,292 @@ function startTicker() {
 // Start after hero entrance animation completes (~2.5s)
 setTimeout(startTicker, 2600);
 
+// ─── GitHub Contribution Heatmap & Live Stats ──────────────────────────────
+// Fetches public GitHub events and renders a contribution heatmap calendar,
+// streak counters, and top-repo cards in the About section's github-stats.
+
+(function () {
+  const GITHUB_USER = 'tarzandawg';
+  const WEEKS_TO_SHOW = 20;
+  const CELL_ANIM_BASE_DELAY = 600; // ms before cells start animating in
+
+  // DOM refs
+  const contribGrid = document.getElementById('contrib-grid');
+  const totalContribsEl = document.getElementById('ghstats-total-contributions');
+  const streakCurrentEl = document.getElementById('ghstreak-current');
+  const streakLongestEl = document.getElementById('ghstreak-longest');
+  const streakActiveEl = document.getElementById('ghstreak-active');
+  const repoStarCard = document.getElementById('ghstat-repo-star');
+  const repoRecentCard = document.getElementById('ghstat-repo-recent');
+  const repoStarName = document.getElementById('repo-star-name');
+  const repoRecentName = document.getElementById('repo-recent-name');
+
+  // Contribution data: { 'YYYY-MM-DD': count }
+  let contribByDate = {};
+  let allDatesSorted = [];
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  function toDateStr(date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  function getContribLevel(count) {
+    if (count === 0) return 0;
+    if (count === 1) return 1;
+    if (count <= 3) return 2;
+    if (count <= 6) return 3;
+    return 4;
+  }
+
+  // ── Streak calculation ────────────────────────────────────────────────────
+
+  function calcStreaks() {
+    if (allDatesSorted.length === 0) return { current: 0, longest: 0, active: 0 };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = toDateStr(today);
+
+    // Build a Set of active date strings for O(1) lookup
+    const activeSet = new Set(allDatesSorted);
+
+    let current = 0;
+    let longest = 0;
+    let active = allDatesSorted.length;
+
+    // Walk backwards from today to find current streak
+    let checkDate = new Date(today);
+    while (true) {
+      const ds = toDateStr(checkDate);
+      if (activeSet.has(ds)) {
+        current++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    // Walk full timeline to find longest streak
+    let runStart = null;
+    let runLen = 0;
+    for (let i = 0; i < allDatesSorted.length; i++) {
+      const d = new Date(allDatesSorted[i]);
+      if (i === 0) {
+        runStart = d;
+        runLen = 1;
+      } else {
+        const prev = new Date(allDatesSorted[i - 1]);
+        const diffDays = (d - prev) / (1000 * 60 * 60 * 24);
+        if (diffDays === 1) {
+          runLen++;
+        } else {
+          if (runLen > longest) longest = runLen;
+          runLen = 1;
+        }
+      }
+    }
+    if (runLen > longest) longest = runLen;
+
+    return { current, longest, active };
+  }
+
+  // ── Build heatmap grid ───────────────────────────────────────────────────
+
+  function buildHeatmap() {
+    if (!contribGrid) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Number of cells = weeks × 7 days
+    const totalCells = WEEKS_TO_SHOW * 7;
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - totalCells + 1);
+
+    // Find the day-of-week of startDate so we can prepend empty cells
+    // Grid auto-flows column (week by week), rows = 7 (Sun-Sat)
+    const startDow = startDate.getDay(); // 0=Sun
+
+    // Build all cells: prepend `startDow` empty cells, then real data
+    const cells = [];
+
+    // Empty cells for days before startDate
+    for (let i = 0; i < startDow; i++) {
+      cells.push({ empty: true });
+    }
+
+    // Real cells for each day
+    for (let i = 0; i < totalCells; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const ds = toDateStr(d);
+      const count = contribByDate[ds] || 0;
+      cells.push({ date: ds, count, level: getContribLevel(count), future: d > today });
+    }
+
+    // Render cells
+    contribGrid.innerHTML = '';
+    cells.forEach((cell, idx) => {
+      const el = document.createElement('div');
+      el.className = 'contrib-cell';
+      if (cell.empty) {
+        el.classList.add('level-0');
+        el.style.visibility = 'hidden';
+      } else if (cell.future) {
+        el.classList.add('level-0');
+        el.style.opacity = '0.15';
+      } else {
+        el.classList.add('level-' + cell.level);
+        if (cell.count > 0) {
+          el.title = `${cell.date}: ${cell.count} contribution${cell.count !== 1 ? 's' : ''}`;
+        } else {
+          el.title = cell.date + ': no activity';
+        }
+        // Staggered fade-in entrance
+        const delay = CELL_ANIM_BASE_DELAY + idx * 3;
+        el.style.opacity = '0';
+        el.style.transition = 'none';
+        setTimeout(() => {
+          el.style.transition = 'opacity 0.4s ease';
+          el.style.opacity = '1';
+        }, delay);
+      }
+      contribGrid.appendChild(el);
+    });
+  }
+
+  // ── Animated number counter ────────────────────────────────────────────────
+
+  function animateNumber(el, target, suffix = '') {
+    if (!el) return;
+    const duration = 900;
+    const start = performance.now();
+    const initial = 0;
+    const change = target - initial;
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(initial + change * eased);
+      el.textContent = current + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  // ── Main: fetch events + build everything ─────────────────────────────────
+
+  async function loadContributions() {
+    try {
+      const res = await fetch(
+        `https://api.github.com/users/${GITHUB_USER}/events/public`,
+        { headers: { Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+      const events = await res.json();
+      if (!Array.isArray(events)) throw new Error('Invalid events response');
+
+      // Aggregate contributions by date
+      const byDate = {};
+      let totalContribs = 0;
+      let topStars = 0;
+      let topStarsRepo = null;
+      let mostRecentRepo = null;
+      let mostRecentDate = null;
+
+      events.forEach(e => {
+        const ds = toDateStr(new Date(e.created_at));
+        if (!byDate[ds]) byDate[ds] = 0;
+
+        if (e.type === 'PushEvent') {
+          const commits = e.payload && e.payload.commits ? e.payload.commits.length : 1;
+          byDate[ds] += commits;
+          totalContribs += commits;
+        } else if (e.type === 'CreateEvent' || e.type === 'DeleteEvent' ||
+                   e.type === 'IssuesEvent' || e.type === 'PullRequestEvent' ||
+                   e.type === 'PullRequestReviewEvent' || e.type === 'WatchEvent' ||
+                   e.type === 'ForkEvent' || e.type === 'ReleaseEvent' ||
+                   e.type === 'IssueCommentEvent' || e.type === 'PullRequestReviewCommentEvent' ||
+                   e.type === 'MemberEvent' || e.type === 'GollumEvent') {
+          byDate[ds] += 1;
+          totalContribs += 1;
+        }
+
+        // Track top starred repo from WatchEvent
+        if (e.type === 'WatchEvent' && e.repo) {
+          // Can't get star count from events API — skip
+        }
+
+        // Track most recent repo from CreateEvent
+        if (e.type === 'CreateEvent' && e.payload && e.payload.ref_type === 'repository') {
+          const d = new Date(e.created_at);
+          if (!mostRecentDate || d > mostRecentDate) {
+            mostRecentDate = d;
+            mostRecentRepo = e.repo ? e.repo.name.split('/')[1] : null;
+          }
+        }
+      });
+
+      contribByDate = byDate;
+      allDatesSorted = Object.keys(byDate).sort();
+
+      // Update total contributions header
+      if (totalContribsEl) {
+        totalContribsEl.textContent = totalContribs + ' contributions this year';
+      }
+
+      // Build heatmap
+      buildHeatmap();
+
+      // Calculate and display streaks
+      const { current, longest, active } = calcStreaks();
+      setTimeout(() => animateNumber(streakCurrentEl, current), CELL_ANIM_BASE_DELAY + 200);
+      setTimeout(() => animateNumber(streakLongestEl, longest), CELL_ANIM_BASE_DELAY + 400);
+      setTimeout(() => animateNumber(streakActiveEl, active), CELL_ANIM_BASE_DELAY + 600);
+
+      // Top repo card: use most starred public repo name from events (WatchEvent)
+      // We infer from CreateEvent repos as a fallback — show repo name
+      const repoNames = events
+        .filter(e => e.type === 'CreateEvent' && e.payload && e.payload.ref_type === 'repository')
+        .map(e => e.repo ? e.repo.name.split('/')[1] : '')
+        .filter(Boolean);
+
+      // Deduplicate to get unique repos
+      const uniqueRepos = [...new Set(repoNames)];
+      if (uniqueRepos.length > 0) {
+        if (repoRecentCard && repoRecentName) {
+          repoRecentName.textContent = uniqueRepos[0];
+          repoRecentCard.style.display = 'flex';
+          repoRecentCard.onclick = () => {
+            window.open(`https://github.com/${GITHUB_USER}/${uniqueRepos[0]}`, '_blank', 'noopener');
+          };
+        }
+      }
+      if (uniqueRepos.length > 1) {
+        if (repoStarCard && repoStarName) {
+          repoStarName.textContent = uniqueRepos[1];
+          repoStarCard.style.display = 'flex';
+          repoStarCard.onclick = () => {
+            window.open(`https://github.com/${GITHUB_USER}/${uniqueRepos[1]}`, '_blank', 'noopener');
+          };
+        }
+      }
+
+    } catch (err) {
+      // Graceful fail — leave cells at level-0
+      console.debug('[GitHubContributions] failed to load:', err.message);
+    }
+  }
+
+  // ── Init: wait for DOM + a brief delay so hero entrance plays first ──────
+  if (contribGrid) {
+    setTimeout(loadContributions, 1800);
+  }
+})();
+
 // ─── Theme Toggle ─────────────────────────────────────────────────────────────
 (function () {
   const STORAGE_KEY = 'tars-theme';

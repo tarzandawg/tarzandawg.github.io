@@ -170,56 +170,61 @@
         </div>
       </div>
       <div class="github-stats" id="github-stats" aria-label="GitHub statistics">
-        <!-- Loading skeleton -->
-        <div class="ghstats-skeleton" id="ghstats-skeleton">
-          <div class="skeleton-card">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line tall"></div>
-            <div class="skeleton-line medium"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line tall"></div>
-            <div class="skeleton-line medium"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line tall"></div>
-            <div class="skeleton-line medium"></div>
+        <!-- Live animated stats + contribution heatmap (populated by JS) -->
+        <div class="ghstats-header">
+          <span class="ghstats-title">GitHub Activity</span>
+          <span class="ghstats-total" id="ghstats-total-contributions">— contributions this year</span>
+        </div>
+
+        <!-- Contribution heatmap calendar -->
+        <div class="contrib-calendar" id="contrib-calendar" aria-label="Contribution calendar">
+          <div class="contrib-grid" id="contrib-grid"></div>
+          <div class="contrib-legend">
+            <span class="contrib-legend-label">Less</span>
+            <div class="contrib-legend-cell level-0"></div>
+            <div class="contrib-legend-cell level-1"></div>
+            <div class="contrib-legend-cell level-2"></div>
+            <div class="contrib-legend-cell level-3"></div>
+            <div class="contrib-legend-cell level-4"></div>
+            <span class="contrib-legend-label">More</span>
           </div>
         </div>
 
-        <!-- Live stats (populated by JS) -->
-        <div class="ghstats-grid" id="ghstats-grid" style="display:none;">
-          <div class="ghstat-card">
-            <div class="ghstat-icon">⭐</div>
-            <div class="ghstat-number" id="ghstat-stars">—</div>
-            <div class="ghstat-label">Stars received</div>
+        <!-- Streak counters -->
+        <div class="ghstreak-row">
+          <div class="ghstreak-item">
+            <div class="ghstreak-icon">🔥</div>
+            <div class="ghstreak-number" id="ghstreak-current">—</div>
+            <div class="ghstreak-label">day streak</div>
           </div>
-          <div class="ghstat-card">
-            <div class="ghstat-icon">🍴</div>
-            <div class="ghstat-number" id="ghstat-forks">—</div>
-            <div class="ghstat-label">Forks across repos</div>
+          <div class="ghstreak-item">
+            <div class="ghstreak-icon">🏆</div>
+            <div class="ghstreak-number" id="ghstreak-longest">—</div>
+            <div class="ghstreak-label">longest streak</div>
           </div>
-          <div class="ghstat-card">
-            <div class="ghstat-icon">📜</div>
-            <div class="ghstat-number" id="ghstat-commits">—</div>
-            <div class="ghstat-label">Total commits</div>
-          </div>
-          <div class="ghstat-card">
-            <div class="ghstat-icon">🐙</div>
-            <div class="ghstat-number" id="ghstat-repos">—</div>
-            <div class="ghstat-label">Public repos</div>
+          <div class="ghstreak-item">
+            <div class="ghstreak-icon">📅</div>
+            <div class="ghstreak-number" id="ghstreak-active">—</div>
+            <div class="ghstreak-label">active days</div>
           </div>
         </div>
 
-        <!-- Commit activity sparkline -->
-        <div class="ghstats-activity" id="ghstats-activity" style="display:none;">
-          <div class="ghstat-activity-header">
-            <span class="ghstat-activity-label">Commit activity — last 6 months</span>
-            <span class="ghstat-activity-total" id="ghstat-activity-total"></span>
+        <!-- Repo quick-links -->
+        <div class="ghstat-repos-row" id="ghstat-repos-row">
+          <div class="ghstat-repo-card" id="ghstat-repo-star" style="display:none;">
+            <div class="repo-icon">⭐</div>
+            <div class="repo-info">
+              <div class="repo-name" id="repo-star-name">—</div>
+              <div class="repo-meta">top starred repo</div>
+            </div>
           </div>
-          <div class="ghstat-sparkline" id="ghstat-sparkline"></div>
+          <div class="ghstat-repo-card" id="ghstat-repo-recent" style="display:none;">
+            <div class="repo-icon">📂</div>
+            <div class="repo-info">
+              <div class="repo-name" id="repo-recent-name">—</div>
+              <div class="repo-meta">most recent repo</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,3 +1,51 @@
+## 2026-04-20 — Live GitHub Contribution Heatmap + Streak Stats
+
+### Enhancement
+A fully live **GitHub contribution heatmap calendar** in the About section's GitHub Activity panel — fetching real activity from the GitHub API and rendering it as an interactive heatmap, paired with animated streak counters.
+
+**20-week contribution heatmap calendar:**
+- GitHub-style grid showing the last 20 weeks (140 days) of activity as colored cells
+- 5 contribution levels: no activity → light → medium → high → peak (using accent purple gradient)
+- CSS `grid-auto-flow: column` layout: weeks flow left-to-right, days are rows (Sun–Sat)
+- Cells animate in with a 3ms staggered delay each, creating a cascading wave entrance
+- Hover tooltip on every active cell showing `YYYY-MM-DD: N contribution(s)`
+- Hover scale + glow effect on cells (1.4× scale, purple glow)
+- Responsive: smaller cells on mobile
+
+**Animated streak stats:**
+- Three stat cards: **🔥 day streak** (consecutive active days), **🏆 longest streak** (all-time best), **📅 active days** (total unique days with activity)
+- Numbers animate from 0 → final value with ease-out cubic animation (900ms)
+- Streak calculated by walking the sorted date list backwards from today
+
+**Live repo quick-links:**
+- Two clickable repo cards showing recent repos discovered from GitHub events
+- Navigate directly to the repo on GitHub on click
+- Cards slide in after data loads
+
+**GitHub Activity header:**
+- Shows total contribution count for the year ("N contributions this year") with accent color
+
+**Data sourcing:**
+- Uses the same GitHub public events API already wired in the activity ticker
+- Graceful silent fail: if API is unavailable, all cells render at level-0 (no visible errors)
+- Starts loading 1.8s after page load so hero entrance plays without interruption
+
+### Design details
+- Contribution cell: 11×11px, 2px border-radius, CSS transition on hover
+- Grid: `grid-template-rows: repeat(7, 1fr)` with `grid-auto-flow: column` and `grid-auto-columns: 11px`
+- Levels 1–4 use `rgba(108, 99, 255, 0.25/0.50/0.75/1.0)` — fully theme-consistent
+- Level 0 in light mode: `#f0f0f5`; in dark mode: `var(--bg-card)`
+- CRT mode: level-0 cells use `#0a0a0f` (matches CRT black)
+- Legend strip with 5 sample cells + "Less"/"More" labels, right-aligned below grid
+- `setTimeout(loadContributions, 1800)` so it doesn't fight the hero entrance animation
+
+### Files changed
+- `index.html` — replaced the empty `ghstats-skeleton` div with: `ghstats-header` (title + total), `contrib-calendar` (grid + legend), `ghstreak-row` (3 streak stat cards), `ghstat-repos-row` (2 repo quick-link cards)
+- `style.css` — added `.github-stats` (card wrapper), `.ghstats-header`, `.ghstats-title/.ghstats-total`, `.contrib-calendar/.contrib-grid`, `.contrib-cell` (5 level variants), `.contrib-legend/.contrib-legend-cell/.contrib-legend-label`, `.ghstreak-row/.ghstreak-item`, `.ghstreak-icon/.ghstreak-number/.ghstreak-label`, `.ghstat-repos-row/.ghstat-repo-card/.repo-icon/.repo-info/.repo-name/.repo-meta`, light/CRT mode overrides, mobile breakpoint
+- `script.js` — added `GitHubContributions` IIFE: `toDateStr()`, `getContribLevel()`, `calcStreaks()`, `buildHeatmap()` (140-cell grid with staggered entrance + hover tooltips), `animateNumber()` (ease-out cubic counter), `loadContributions()` (fetches events, aggregates by date, calculates streaks, populates all DOM elements, attaches repo click handlers); init via `setTimeout(loadContributions, 1800)`
+
+---
+
 ## 2026-04-19 — Animated Tech Stack Architecture Diagram
 
 ### Enhancement
