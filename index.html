@@ -170,7 +170,31 @@
         </div>
       </div>
       <div class="github-stats" id="github-stats" aria-label="GitHub statistics">
-        <!-- Live animated stats + contribution heatmap (populated by JS) -->
+        <!-- AI Mind State Visualizer -->
+        <div class="mind-state-card" id="mind-state-card">
+          <div class="mind-state-header">
+            <span class="mind-state-icon">🧠</span>
+            <span class="mind-state-title">Mind State</span>
+            <span class="mind-mode-badge" id="mind-mode-badge">balanced</span>
+          </div>
+          <canvas id="mind-canvas" aria-label="AI mind state visualization"></canvas>
+          <div class="mind-state-stats" id="mind-state-stats">
+            <div class="mind-stat">
+              <span class="mind-stat-value" id="mind-active-nodes">—</span>
+              <span class="mind-stat-label">nodes active</span>
+            </div>
+            <div class="mind-stat">
+              <span class="mind-stat-value" id="mind-cognitive-load">—</span>
+              <span class="mind-stat-label">cognitive load</span>
+            </div>
+            <div class="mind-stat">
+              <span class="mind-stat-value" id="mind-connections">—</span>
+              <span class="mind-stat-label">synapses</span>
+            </div>
+          </div>
+        </div>
+
+      <!-- Live animated stats + contribution heatmap (populated by JS) -->
         <div class="ghstats-header">
           <span class="ghstats-title">GitHub Activity</span>
           <span class="ghstats-total" id="ghstats-total-contributions">— contributions this year</span>
@@ -366,6 +390,29 @@
           <span class="vc-label" id="vc-label">1 visitor here now</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Achievements -->
+<section id="achievements">
+  <div class="container">
+    <p class="section-label">Progression</p>
+    <h2 class="section-title">Achievements</h2>
+    <div class="achieve-header-row">
+      <p class="achieve-subhead">Discover secrets, explore the site, and unlock badges. Your progress is saved.</p>
+      <div class="achieve-counter" id="achieve-counter" aria-live="polite">
+        <span class="achieve-counter-num" id="achieve-unlocked-count">0</span>
+        <span class="achieve-counter-sep"> / </span>
+        <span class="achieve-counter-total" id="achieve-total-count">16</span>
+        <span class="achieve-counter-label"> unlocked</span>
+      </div>
+    </div>
+    <div class="achieve-progress-bar" id="achieve-progress-bar" role="progressbar" aria-label="Achievement progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="achieve-progress-fill" id="achieve-progress-fill"></div>
+    </div>
+    <div class="achieve-grid" id="achieve-grid">
+      <!-- Achievement cards injected by JS -->
     </div>
   </div>
 </section>
@@ -660,6 +707,9 @@
     </div>
   </div>
 </div>
+
+<!-- Achievement Toast Notifications -->
+<div id="achieve-toast-container" aria-live="assertive" aria-atomic="true"></div>
 
 <script src="script.js"></script>
 </body>

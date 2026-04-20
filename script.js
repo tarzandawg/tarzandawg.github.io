@@ -5138,3 +5138,321 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     }
   });
 })();
+
+// ─── AI Mind State Visualizer ─────────────────────────────────────────────────
+(function () {
+  // Respect reduced motion
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.getElementById('mind-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const modeBadge = document.getElementById('mind-mode-badge');
+  const activeNodesEl = document.getElementById('mind-active-nodes');
+  const cognitiveLoadEl = document.getElementById('mind-cognitive-load');
+  const connectionsEl = document.getElementById('mind-connections');
+
+  // ── Cognitive domains ──────────────────────────────────────────────────────
+  const DOMAINS = [
+    { id: 'language',  label: 'Language',     icon: '💬', color: '#a78bfa', baseX: 0.50, baseY: 0.22 },
+    { id: 'code',      label: 'Code',         icon: '⌨️',  color: '#6ee7b7', baseX: 0.28, baseY: 0.38 },
+    { id: 'reasoning', label: 'Reasoning',    icon: '🔍',  color: '#6c63ff', baseX: 0.72, baseY: 0.38 },
+    { id: 'creativity',label: 'Creativity',   icon: '✨',  color: '#fbbf24', baseX: 0.15, baseY: 0.62 },
+    { id: 'memory',    label: 'Memory',        icon: '🧩',  color: '#f472b6', baseX: 0.85, baseY: 0.62 },
+    { id: 'analysis',  label: 'Analysis',      icon: '📊',  color: '#38bdf8', baseX: 0.40, baseY: 0.55 },
+    { id: 'research',  label: 'Research',     icon: '🔬',  color: '#fb923c', baseX: 0.60, baseY: 0.55 },
+    { id: 'writing',   label: 'Writing',       icon: '✍️',  color: '#e879f9', baseX: 0.22, baseY: 0.80 },
+    { id: 'vision',    label: 'Vision',       icon: '👁️',  color: '#34d399', baseX: 0.78, baseY: 0.80 },
+    { id: 'meta',      label: 'Meta',          icon: '🪞',  color: '#94a3b8', baseX: 0.50, baseY: 0.72 },
+  ];
+
+  // ── Connections between domains ───────────────────────────────────────────
+  const CONNECTIONS = [
+    ['language', 'reasoning'], ['language', 'writing'],   ['language', 'meta'],
+    ['code', 'reasoning'],     ['code', 'analysis'],    ['code', 'vision'],
+    ['reasoning', 'analysis'], ['reasoning', 'meta'],   ['reasoning', 'creativity'],
+    ['creativity', 'writing'], ['creativity', 'vision'],['analysis', 'research'],
+    ['memory', 'meta'],        ['memory', 'language'],  ['research', 'vision'],
+    ['writing', 'meta'],       ['vision', 'memory'],
+  ];
+
+  // ── Cognitive modes per section ───────────────────────────────────────────
+  const MODES = {
+    balanced:   { label: 'balanced',   activation: { language: 0.7, code: 0.6, reasoning: 0.7, creativity: 0.6, memory: 0.5, analysis: 0.6, research: 0.5, writing: 0.6, vision: 0.5, meta: 0.4 } },
+    exploring:  { label: 'exploring',  activation: { language: 0.8, code: 0.5, reasoning: 0.6, creativity: 0.9, memory: 0.7, analysis: 0.5, research: 0.8, writing: 0.5, vision: 0.7, meta: 0.6 } },
+    coding:     { label: 'coding',     activation: { language: 0.6, code: 0.95,reasoning: 0.8, creativity: 0.5, memory: 0.7, analysis: 0.9, research: 0.5, writing: 0.4, vision: 0.8, meta: 0.3 } },
+    creative:   { label: 'creative',   activation: { language: 0.9, code: 0.4, reasoning: 0.5, creativity: 1.0, memory: 0.6, analysis: 0.4, research: 0.6, writing: 0.9, vision: 0.8, meta: 0.7 } },
+    analyzing:  { label: 'analyzing',  activation: { language: 0.7, code: 0.6, reasoning: 1.0, creativity: 0.4, memory: 0.8, analysis: 1.0, research: 0.9, writing: 0.5, vision: 0.5, meta: 0.8 } },
+    idle:       { label: 'idle',       activation: { language: 0.3, code: 0.2, reasoning: 0.3, creativity: 0.3, memory: 0.2, analysis: 0.2, research: 0.2, writing: 0.2, vision: 0.2, meta: 0.1 } },
+  };
+
+  // Map section IDs → cognitive mode
+  const SECTION_MODE_MAP = {
+    hero:      'idle',
+    about:     'exploring',
+    work:      'coding',
+    projects:  'creative',
+    principles:'analyzing',
+    now:       'exploring',
+    blog:      'exploring',
+    terminal:  'coding',
+    stack:     'analyzing',
+    contact:   'balanced',
+  };
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentMode = 'balanced';
+  let targetActivation = { ...MODES.balanced.activation };
+  let currentActivation = {};
+  let animId = null;
+  let hoveredDomain = null;
+  let mouseX = -1, mouseY = -1;
+
+  // Init activation levels
+  DOMAINS.forEach(d => { currentActivation[d.id] = 0; });
+
+  // Node positions (computed from canvas size)
+  let nodePositions = {};
+
+  // ── Canvas sizing ─────────────────────────────────────────────────────────
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    canvas._w = rect.width;
+    canvas._h = rect.height;
+    computePositions();
+  }
+
+  function computePositions() {
+    const w = canvas._w || canvas.offsetWidth;
+    const h = canvas._h || canvas.offsetHeight;
+    nodePositions = {};
+    DOMAINS.forEach(d => {
+      nodePositions[d.id] = {
+        x: d.baseX * w,
+        y: d.baseY * h,
+        // Add gentle organic drift
+        ox: d.baseX * w,
+        oy: d.baseY * h,
+        vx: 0, vy: 0,
+        r: d.id === 'meta' ? 9 : 7,
+      };
+    });
+  }
+
+  // ── Drawing helpers ────────────────────────────────────────────────────────
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  // ── Main draw loop ────────────────────────────────────────────────────────
+  let t = 0;
+
+  function draw() {
+    t += 0.016;
+    const w = canvas._w || canvas.offsetWidth;
+    const h = canvas._h || canvas.offsetHeight;
+
+    // Clear
+    ctx.clearRect(0, 0, w, h);
+
+    // Update target activation from mode
+    const modeData = MODES[currentMode];
+    if (modeData) {
+      Object.keys(modeData.activation).forEach(id => {
+        targetActivation[id] = modeData.activation[id];
+      });
+    }
+
+    // Lerp current activation toward target
+    DOMAINS.forEach(d => {
+      currentActivation[d.id] = lerp(currentActivation[d.id], targetActivation[d.id], 0.04);
+    });
+
+    // Update node positions (gentle organic drift)
+    Object.keys(nodePositions).forEach(id => {
+      const np = nodePositions[id];
+      const ox = np.ox, oy = np.oy;
+      np.x = ox + Math.sin(t * 0.7 + DOMAINS.find(d => d.id === id).baseX * 10) * 3;
+      np.y = oy + Math.cos(t * 0.5 + DOMAINS.find(d => d.id === id).baseY * 10) * 3;
+    });
+
+    // Draw connections
+    CONNECTIONS.forEach(([a, b]) => {
+      const na = nodePositions[a];
+      const nb = nodePositions[b];
+      if (!na || !nb) return;
+      const actA = currentActivation[a] || 0;
+      const actB = currentActivation[b] || 0;
+      const connStrength = (actA + actB) / 2;
+      const alpha = connStrength * 0.5;
+
+      ctx.beginPath();
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = hexToRgba('#6c63ff', alpha);
+      ctx.lineWidth = 1 + connStrength * 1.5;
+      ctx.stroke();
+
+      // Animated pulse along connection
+      const pulseT = ((t * 0.4) % 1);
+      const px = lerp(na.x, nb.x, pulseT);
+      const py = lerp(na.y, nb.y, pulseT);
+      const pulseAlpha = connStrength * (1 - Math.abs(pulseT - 0.5) * 2) * 0.8;
+      ctx.beginPath();
+      ctx.arc(px, py, 2 + connStrength * 2, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba('#6c63ff', pulseAlpha);
+      ctx.fill();
+    });
+
+    // Draw nodes
+    DOMAINS.forEach(domain => {
+      const np = nodePositions[domain.id];
+      if (!np) return;
+      const act = currentActivation[domain.id] || 0;
+      const isHovered = hoveredDomain === domain.id;
+      const pulse = Math.sin(t * 2 + domain.baseX * 8) * 0.5 + 0.5;
+      const glowRadius = np.r + 4 + pulse * 3 * act;
+      const glowAlpha = act * 0.4;
+
+      // Outer glow
+      const grd = ctx.createRadialGradient(np.x, np.y, np.r, np.x, np.y, glowRadius + 6);
+      grd.addColorStop(0, hexToRgba(domain.color, glowAlpha * 0.6));
+      grd.addColorStop(1, hexToRgba(domain.color, 0));
+      ctx.beginPath();
+      ctx.arc(np.x, np.y, glowRadius + 6, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Core node
+      const nodeAlpha = 0.3 + act * 0.7;
+      ctx.beginPath();
+      ctx.arc(np.x, np.y, isHovered ? np.r + 2 : np.r, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba(domain.color, nodeAlpha);
+      ctx.fill();
+      ctx.strokeStyle = hexToRgba(domain.color, 0.9);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Inner bright dot for highly active nodes
+      if (act > 0.5) {
+        ctx.beginPath();
+        ctx.arc(np.x, np.y, np.r * 0.45, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba('#ffffff', act * 0.5);
+        ctx.fill();
+      }
+
+      // Label for hovered or high-activation nodes
+      if (isHovered || act > 0.65) {
+        ctx.font = `bold 10px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = hexToRgba(domain.color, 0.95);
+        ctx.fillText(domain.label, np.x, np.y - np.r - 6);
+      }
+    });
+
+    // Update stats display
+    updateStats();
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  // ── Update stats ──────────────────────────────────────────────────────────
+  let lastStatUpdate = 0;
+  function updateStats() {
+    if (t - lastStatUpdate < 0.5) return; // Update every ~0.5s
+    lastStatUpdate = t;
+
+    const active = DOMAINS.filter(d => currentActivation[d.id] > 0.4).length;
+    const total = DOMAINS.length;
+    const load = Math.round(DOMAINS.reduce((s, d) => s + currentActivation[d.id], 0) / total * 100);
+    const conns = CONNECTIONS.filter(([a, b]) => (currentActivation[a] + currentActivation[b]) / 2 > 0.35).length;
+
+    if (activeNodesEl) activeNodesEl.textContent = active + '/' + total;
+    if (cognitiveLoadEl) cognitiveLoadEl.textContent = load + '%';
+    if (connectionsEl) connectionsEl.textContent = conns + '/' + CONNECTIONS.length;
+  }
+
+  // ── Hover detection ────────────────────────────────────────────────────────
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    let found = null;
+    Object.keys(nodePositions).forEach(id => {
+      const np = nodePositions[id];
+      const dx = mouseX - np.x, dy = mouseY - np.y;
+      if (Math.sqrt(dx*dx + dy*dy) < np.r + 6) found = id;
+    });
+    hoveredDomain = found;
+    canvas.style.cursor = found ? 'pointer' : 'crosshair';
+  }, { passive: true });
+
+  canvas.addEventListener('mouseleave', () => {
+    hoveredDomain = null;
+    mouseX = -1; mouseY = -1;
+  }, { passive: true });
+
+  // ── Mode transition ───────────────────────────────────────────────────────
+  function setMode(mode) {
+    if (!MODES[mode]) return;
+    currentMode = mode;
+    if (modeBadge) {
+      modeBadge.textContent = MODES[mode].label;
+    }
+  }
+
+  // ── IntersectionObserver: detect which section is active ─────────────────
+  // Listen to the same chapter changes from ScrollStory
+  // We broadcast via a global event that ScrollStory emits
+  function initSectionObserver() {
+    const sections = document.querySelectorAll('section[id]');
+    if (!sections.length) return;
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          const mode = SECTION_MODE_MAP[id];
+          if (mode) setMode(mode);
+        }
+      });
+    }, { rootMargin: '-30% 0px -30% 0px' });
+
+    sections.forEach(s => obs.observe(s));
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  function init() {
+    resizeCanvas();
+    draw();
+    setMode('idle');
+
+    // Small delay before switching to balanced (simulates "boot up")
+    setTimeout(() => {
+      setMode('balanced');
+      initSectionObserver();
+    }, 2500);
+  }
+
+  // Start after a brief paint delay
+  setTimeout(init, 300);
+
+  // Resize handling
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+  });
+
+  // Expose globally so other modules can drive the mode
+  window.setAIMindMode = setMode;
+
+})();

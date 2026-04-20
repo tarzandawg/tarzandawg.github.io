@@ -3070,6 +3070,164 @@ body.crt-active .terminal-output .crt-boot {
   }
 }
 
+/* ─── AI Mind State Visualizer ──────────────────────────────────────────── */
+.mind-state-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mind-state-card:hover {
+  border-color: rgba(108, 99, 255, 0.5);
+}
+
+.mind-state-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mind-state-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+
+.mind-state-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  flex: 1;
+}
+
+.mind-mode-badge {
+  font-size: 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  background: rgba(108, 99, 255, 0.12);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 50px;
+  padding: 0.15rem 0.6rem;
+  letter-spacing: 0.05em;
+  transition: color 0.4s ease, background 0.4s ease, border-color 0.4s ease;
+}
+
+#mind-canvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  cursor: crosshair;
+  background: rgba(10, 10, 15, 0.4);
+  border: 1px solid rgba(30, 30, 46, 0.5);
+  transition: border-color 0.3s;
+}
+
+.mind-state-card:hover #mind-canvas {
+  border-color: rgba(108, 99, 255, 0.25);
+}
+
+.mind-state-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.mind-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.25rem;
+  transition: border-color 0.3s;
+}
+
+.mind-stat:hover {
+  border-color: rgba(108, 99, 255, 0.3);
+}
+
+.mind-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+  transition: color 0.4s ease;
+}
+
+.mind-stat-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Light mode */
+body.light-mode .mind-state-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+body.light-mode #mind-canvas {
+  background: rgba(245, 244, 249, 0.5);
+  border-color: var(--border);
+}
+
+body.light-mode .mind-stat {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+body.light-mode .mind-mode-badge {
+  background: rgba(108, 99, 255, 0.1);
+  border-color: rgba(108, 99, 255, 0.25);
+}
+
+/* CRT mode accent for mind state */
+body.crt-active .mind-state-card {
+  border-color: rgba(100, 200, 100, 0.3) !important;
+  box-shadow: inset 0 0 30px rgba(0, 60, 0, 0.15), 0 0 12px rgba(0, 150, 0, 0.08) !important;
+}
+
+body.crt-active .mind-mode-badge {
+  color: #33ff33 !important;
+  background: rgba(0, 40, 0, 0.6) !important;
+  border-color: rgba(51, 255, 51, 0.3) !important;
+}
+
+body.crt-active .mind-stat-value {
+  color: #33ff33 !important;
+  text-shadow: 0 0 6px #33ff33;
+}
+
+body.crt-active #mind-canvas {
+  border-color: rgba(51, 255, 51, 0.2) !important;
+}
+
+@media (max-width: 640px) {
+  #mind-canvas {
+    height: 160px;
+  }
+
+  .mind-state-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 /* ─── GitHub Contribution Heatmap ───────────────────────────────────────── */
 .github-stats {
   background: var(--bg);
