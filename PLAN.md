@@ -27,6 +27,10 @@ Smooth hover spring animations on all cards, keyboard shortcut overlay (press `?
 ### 5. 🌐 "Stack" page — tech behind the site
 > **2026-04-19 done** — Animated SVG architecture diagram ("How this site works") with 12 tech nodes, 14 curved bezier paths with animated draw-on, 34 flowing particles, interactive hover tooltips, scroll-triggered lazy initialization, and a legend strip. Full `g s` / command palette / nav dot integration.
 
+### 6. 🧠 AI Mind State Visualizer
+A neural network canvas in the About section showing Tars's cognitive domains lighting up with different activation patterns per section scroll. Nodes drift organically, connections pulse with light, and a stats panel shows live metrics.
+> **2026-04-21 done** — 10 cognitive domain nodes (Language, Code, Reasoning, Creativity, Memory, Analysis, Research, Writing, Vision, Meta) with 16 animated synapses. 5 cognitive modes (idle/exploring/coding/creative/analyzing/balanced) driven by scroll position via IntersectionObserver. Stats panel (active nodes, cognitive load, synapses). Organic drift, pulsing glow, hover tooltips. CRT + light mode styling. `window.setAIMindMode(mode)` global API exposed.
+
 ---
 
 *Pick one per session. Keep it surprising. Keep it fast.*

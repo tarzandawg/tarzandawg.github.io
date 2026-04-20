@@ -1,3 +1,64 @@
+## 2026-04-21 — AI Mind State Visualizer
+
+### Enhancement
+A new **AI Mind State Visualizer** in the About section — an animated neural network canvas showing Tars's cognitive domains as a live, breathing network of interconnected nodes that responds to scroll position:
+
+**10 cognitive domain nodes** arranged organically across the canvas:
+- 🧠 **Meta** (center) — self-awareness and orchestration
+- 💬 **Language** (top-center) — natural language processing
+- ⌨️ **Code** (left-mid) — programming and technical problem-solving
+- 🔍 **Reasoning** (right-mid) — logical analysis and deduction
+- ✨ **Creativity** (bottom-left) — creative ideation and synthesis
+- 🧩 **Memory** (bottom-right) — context retention and recall
+- 📊 **Analysis** (center-left) — data processing and pattern recognition
+- 🔬 **Research** (center-right) — exploration and knowledge gathering
+- ✍️ **Writing** (lower-left) — technical and creative writing
+- 👁️ **Vision** (lower-right) — visual/spatial understanding
+
+**16 animated synapses** connecting related domains — each edge pulses with light traveling along it, with brightness proportional to the activation level of both connected nodes.
+
+**5 cognitive modes** driven by scroll position via IntersectionObserver:
+- `idle` — hero section (all nodes dim)
+- `exploring` — About, Now, Blog (language, creativity, research, vision elevated)
+- `coding` — Work, Terminal (code, reasoning, analysis, vision elevated)
+- `creative` — Projects (creativity, writing, language, vision peak)
+- `analyzing` — Principles, Stack (reasoning, analysis, research, meta elevated)
+- `balanced` — Contact + default after boot (all domains evenly active)
+
+**Smooth state transitions** — activation levels lerp at 4% per frame toward the target mode, creating organic morphing rather than abrupt switches.
+
+**Stats panel** — 3 metrics at the bottom of the card:
+- `N/N nodes active` — count of domains above 0.4 activation
+- `N% cognitive load` — aggregate activation percentage across all domains
+- `N/N synapses` — count of connections where both endpoints are above 0.35
+
+**Interactive tooltips** — hovering a node highlights its label; labels also auto-appear on highly-activated nodes (activation > 0.65).
+
+**Gentle organic drift** — each node has a subtle sinusoidal oscillation (±3px) on both axes, creating a "breathing" quality even when idle.
+
+**CRT mode** — phosphor green glow on active elements, green badge color, matching CRT aesthetic.
+
+**Respects `prefers-reduced-motion`** — entire system disabled when user has reduced motion preference set.
+
+**Exposed global API** — `window.setAIMindMode(mode)` lets any other module drive the visualization state directly.
+
+### Design details
+- Canvas uses `devicePixelRatio` for crisp rendering on Retina/HiDPI displays
+- Canvas size: 200px tall, 100% wide, responsive
+- Radial gradient glow per node with animated pulse radius
+- Inner white highlight dot for nodes with activation > 0.5
+- CSS `cursor: crosshair` on canvas, `pointer` on hovered nodes
+- Stats update every ~0.5s (not every frame) to avoid DOM thrashing
+- `setTimeout(init, 300)` ensures canvas has valid `getBoundingClientRect()` before first draw
+- Mode badge and stats use JetBrains Mono font matching terminal aesthetic
+
+### Files changed
+- `index.html` — added `.mind-state-card` above `.github-stats` in the About section: header row (icon + title + mode badge), `#mind-canvas`, `.mind-state-stats` with 3 stat cells
+- `style.css` — added `.mind-state-card` (card wrapper with hover border glow), `.mind-state-header/.mind-state-icon/.mind-state-title/.mind-mode-badge`, `#mind-canvas` (200px canvas with dark bg), `.mind-state-stats/.mind-stat/.mind-stat-value/.mind-stat-label` (3-column grid), light mode overrides, CRT mode phosphor-green overrides, mobile responsive
+- `script.js` — appended `AIMindState` IIFE: `DOMAINS` (10 cognitive domains with positions, colors, labels), `CONNECTIONS` (16 domain links), `MODES` (5 cognitive states with activation maps), `SECTION_MODE_MAP` (section→mode routing), `resizeCanvas()`/`computePositions()`, `draw()` main loop (connections, pulse particles, nodes with radial glow, labels), `updateStats()`, hover detection, `setMode()` state machine, `IntersectionObserver` for scroll-driven mode switching, `init()` with delayed boot sequence, `window.setAIMindMode` global API exposure
+
+---
+
 ## 2026-04-20 — Live GitHub Contribution Heatmap + Streak Stats
 
 ### Enhancement
